@@ -1,0 +1,1 @@
+Vagrantfile to create a three VM EMC ScaleIO lab setup, read more on how to use it at http://purevirtual.eu
