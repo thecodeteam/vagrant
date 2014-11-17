@@ -12,7 +12,6 @@ class scaleio::params (
   $default_password       = "admin",
   $enable_cluster_mode    = true,
   $sds_network            = undef,
-  $sio_volume             = undef,
   $sio_sds_device         = undef,
   $sio_sdc_volume         = undef,
   $callhome_cfg           = undef,
@@ -27,7 +26,7 @@ class scaleio::params (
       fail("ScaleIO installation is not supported on an ${::osfamily} based system.")
     }
   }
-  
+
   $pathpackage     = "/tmp"
   $callhomepackage = ["EMC-ScaleIO-callhome","-${version}.el6.x86_64"]
   $mdmpackage      = ["EMC-ScaleIO-mdm","-${version}.el6.x86_64"]
@@ -41,6 +40,3 @@ class scaleio::params (
   $use_ssd           = false
 
 }
-
-
-
