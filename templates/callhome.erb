@@ -1,0 +1,24 @@
+[general]
+timeout = 600
+# Set Max DataBase File Size before rotating
+rotate = 1000000000
+workdir = /opt/emc/scaleio/callhome/bin/
+email_to = <%= callhome_cfg['email_to'] %>
+email_from = <%= callhome_cfg['email_from'] %>
+event_db = /opt/emc/scaleio/mdm/logs/eventlog.db
+# The User must provide the following parameter in order to use Call-Home mechanism
+username = <%= callhome_cfg['username'] %>
+password = <%= callhome_cfg['password'] %>
+customer_name = <%= callhome_cfg['customer'] %>
+
+[smtp]
+host = <%= callhome_cfg['smtp_host'] %>
+port = <%= callhome_cfg['smtp_port'] %>
+tls = no
+username = <%= callhome_cfg['smtp_user'] %>
+password = <%= callhome_cfg['smtp_password'] %>
+
+[email_alert]
+email_to = <%= callhome_cfg['email_to'] %>
+# Severity can be: warning, error, critical
+severity = <%= callhome_cfg['severity'] %>
