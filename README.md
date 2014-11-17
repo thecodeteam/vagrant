@@ -38,6 +38,17 @@ Most aspects of configuration of ScaleIO have been brought into Puppet.  This me
 
 * Requires separately downloadable ScaleIO RPMs
 
+Required modules to install
+
+	puppet module install puppetlabs-stdlib
+	puppet module install puppetlabs-firewall
+	puppet module install puppetlabs-java
+
+	
+Optional module to install
+
+	puppet module install dalen-dnsquery
+
 ### Beginning with scaleio
 
 	puppet module install emccode-scaleio
@@ -46,8 +57,9 @@ Most aspects of configuration of ScaleIO have been brought into Puppet.  This me
 
 The following section represents variables that are configured at the top of the site.pp file.  They can be considered optional and global as they are reused in the specific class declarations later on.
 
+In order to make the site.pp more dynamic, we are using the hosts_lookup function to retrieve names for DNS names.  This allows a more dynamic capability for IP addresses.  The FQDN's represented below are not used in the Puppet paramaters, only as lookup references here in the site.pp file.  If lookups are to occur against a DNS server, the dns_lookup function can be used instead of hosts_lookup.  See the puppet <a href="https://github.com/emccode/vagrant-puppet-scaleio">vagrant-puppet-scaleio</a> repo for the most static example of the module.
+
 	$version = '1.30-426.0'
-	$sds_network = '192.168.50.0/24'
 	$mdm_fqdn = ['mdm1.scaleio.local','mdm2.scaleio.local']
 	$mdm_ip = [hosts_lookup($mdm_fqdn[0])[0],hosts_lookup($mdm_fqdn[1])[0]]
 	$tb_fqdn = 'tb.scaleio.local'
@@ -121,6 +133,8 @@ The callhome_cfg section is used to configure callhome services for support.
 
 Following this there are the node classifications.  Here we are provdining the default site.pp classifications that will configure a ScaleIO cluster from scratch using 3 nodes and multiple components per node.
 
+Notice that there are extra fields being represented in the node classifications that may not naturally seem like they are required based on the node name.  In the below examples, we are setting up multi-role nodes by specifying multiple components which may require the extra parameters.
+
 The following is a Tie-Breaker node.
 
 	node /tb/ {
@@ -128,9 +142,7 @@ The following is a Tie-Breaker node.
 	        password => $password,
 	        version => $version,
 	        mdm_ip => $mdm_ip,
-	        mdm_fqdn => $mdm_fqdn,
 	        tb_ip => $tb_ip,
-	        sds_network => $sds_network,
 	        callhome_cfg => $callhome_cfg,
 	        sio_sds_device => $sio_sds_device,
 	        sds_ssd_env_flag => true,
@@ -146,10 +158,8 @@ The following is an MDM node.
 	        password => $password,
 	        version => $version,
 	        mdm_ip => $mdm_ip,
-	        mdm_fqdn => $mdm_fqdn,
 	        tb_ip => $tb_ip,
 	        cluster_name => $cluster_name,
-	        sds_network => $sds_network,
 	        sio_sds_device => $sio_sds_device,
 	        sio_sdc_volume => $sio_sdc_volume,
 	        callhome_cfg => $callhome_cfg,
@@ -165,8 +175,6 @@ The following is an SDS node.
 	        password => $password,
 	        version => $version,
 	        mdm_ip => $mdm_ip,
-	        mdm_fqdn => $mdm_fqdn,
-	        sds_network => $sds_network,
 	        sio_sds_device => $sio_sds_device,
 	        sds_ssd_env_flag => true,
 	        components => ['sds'],
@@ -181,7 +189,6 @@ The following is an SDC node.
 	        password => $password,
 	        version => $version,
 	        mdm_ip => $mdm_ip,
-	        mdm_fqdn => $mdm_fqdn,
 	        components => ['sdc'],
 	  }
 	  include scaleio
@@ -194,7 +201,6 @@ The following is a Gateway node.
 	        gw_password => $gw_password,
 	        version => $version,
 	        mdm_ip => $mdm_ip,
-	        mdm_fqdn => $mdm_fqdn,
 	        components => ['gw'],
 	  }
 	  include scaleio
