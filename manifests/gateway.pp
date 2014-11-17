@@ -1,7 +1,7 @@
 
 class scaleio::gateway (
-  $components = $scaleio::params::components,
-  $mdm_ip = $scaleio::params::mdm_ip,
+  $components  = $scaleio::params::components,
+  $mdm_ip      = $scaleio::params::mdm_ip,
   $gw_password = $scaleio::params::gw_password
 ){
   

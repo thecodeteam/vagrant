@@ -1,7 +1,6 @@
 
 class scaleio::drv_cfg (
 	$mdm_ip              = $scaleio::params::mdm_ip,
-	$mdm_fqdm			 = $scaleio::params::mdm_fqdn,
 ) {
 	if $scaleio::params::mdm_ip {
 	    $drv_mdm = "mdm ${join($mdm_ip,' ')}"
