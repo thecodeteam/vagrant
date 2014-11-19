@@ -1,31 +1,30 @@
 {
   "name": "emccode/scaleio",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "emccode",
   "summary": "Deploy and configure ScaleIO storage components and volumes",
   "license": "Apache 2.0",
   "source": "https://github.com/emccode/puppet-scaleio",
-  "project_page": "https://github.com/emccode/puppet-scaleio",
+  "requirements": [
+    {
+      "version_requirement": "3.x",
+      "name": "puppet"
+    }
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystemrelease": [
+        "6"
+      ],
+      "operatingsystem": "CentOS"
+    }
+  ],
   "issues_url": "https://github.com/emccode/puppet-scaleio/issues",
+  "project_page": "https://github.com/emccode/puppet-scaleio",
   "dependencies": [
-    {"version_requirement":">= 4.3.2","name":"puppetlabs-stdlib"},
     {"version_requirement":">= 1.1.3","name":"puppetlabs-firewall"},
+    {"version_requirement":">= 4.3.2","name":"puppetlabs-stdlib"},
     {"version_requirement":">= 1.1.2","name":"puppetlabs-java"},
     {"version_requirement":">= 2.0.0","name":"dalen-dnsquery"}
-  ],
-  "operatingsystem_support":[
-      {
-        "operatingsystem": "CentOS",
-        "operatingsystemrelease": [
-          "6"
-        ]
-      }
-    ],
-  "requirements":[
-    {
-      "name": "puppet",
-      "version_requirement": "3.x"
-    }
   ]
 }
-
