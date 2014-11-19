@@ -1,3 +1,10 @@
+
+## 0.1.2
+
+Bugfixes:
+
+- Updated device.pp to ensure all types of files are checked before trying to truncate
+
 ## 0.1.1
 
 Bugfixes:
