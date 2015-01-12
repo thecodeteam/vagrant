@@ -1,15 +1,5 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
-# Created by Jonas Rosland, @virtualswede
+# Created by Jonas Rosland, @virtualswede & Matt Cowger, @mcowger
 # Many thanks to this post by James Carr: http://blog.james-carr.org/2013/03/17/dynamic-vagrant-nodes/
-
-################################################################################################################################
-# For the shell commands to work, make sure you have the ECS-1.21-0.20.el6-install file in the Vagrant folder
-# Also make sure you edit the license below
-################################################################################################################################
-
-# add your license here
-license="YOURLICENSEHERE"
 
 # vagrant box
 vagrantbox="centos_6.5"
@@ -34,7 +24,7 @@ firstmdmip = "#{network}.12"
 secondmdmip = "#{network}.13"
 
 # version of installation package
-version = "1.30-426.0.el6"
+version = "1.31-258.2.el6"
 
 # installation folder
 siinstall = "/opt/scaleio/siinstall"
@@ -58,6 +48,11 @@ nodes.each { |node_name|
 }
 
 Vagrant.configure("2") do |config|
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    #config.proxy.http     = "http://proxy.example.com:3128/"
+    #config.proxy.https    = "http://proxy.example.com:3128/"
+    #config.proxy.no_proxy = "localhost,127.0.0.1,.example.com"
+  end
   scaleio_nodes.each do |node|
     config.vm.define node[:hostname] do |node_config|
       node_config.vm.box = "#{vagrantbox}"
