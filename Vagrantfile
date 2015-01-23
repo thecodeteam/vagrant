@@ -69,6 +69,7 @@ Vagrant.configure("2") do |config|
 
       if node[:hostname] == "mdm1"
         node_config.vm.network "private_network", ip: "#{firstmdmip}"
+        node_config.vm.network "forwarded_port", guest: 6611, host: 6611
         node_config.vm.provision "shell",
           inline: "truncate -s 100GB #{device} && yum install numactl libaio -y && mkdir -p #{siinstall} && cp /vagrant/#{packagename}-*-#{version}.* #{siinstall} && cd #{siinstall} && rpm -Uvh #{packagename}-mdm-#{version}.x86_64.rpm && rpm -Uvh #{packagename}-sds-#{version}.x86_64.rpm && MDM_IP=#{firstmdmip},#{secondmdmip} rpm -Uvh #{packagename}-sdc-#{version}.x86_64.rpm && scli --mdm --add_primary_mdm --primary_mdm_ip #{firstmdmip} --accept_license"
       end
