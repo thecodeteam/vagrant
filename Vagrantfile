@@ -63,21 +63,27 @@ Vagrant.configure("2") do |config|
       end
       if node[:hostname] == "tb"
         node_config.vm.network "private_network", ip: "#{tbip}"
-        node_config.vm.provision "shell",
-          inline: "truncate -s 100GB #{device} && yum install numactl libaio -y && mkdir -p #{siinstall} && cp /vagrant/#{packagename}-*-#{version}.* #{siinstall} && cd #{siinstall} && rpm -Uvh #{packagename}-tb-#{version}.x86_64.rpm && rpm -Uvh #{packagename}-sds-#{version}.x86_64.rpm && MDM_IP=#{firstmdmip},#{secondmdmip} rpm -Uvh #{packagename}-sdc-#{version}.x86_64.rpm"
+        node_config.vm.provision "shell" do |s|
+          s.path = "scripts/tb.sh"
+          s.args   = "-v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall}"
+        end
       end
 
       if node[:hostname] == "mdm1"
         node_config.vm.network "private_network", ip: "#{firstmdmip}"
         node_config.vm.network "forwarded_port", guest: 6611, host: 6611
-        node_config.vm.provision "shell",
-          inline: "truncate -s 100GB #{device} && yum install numactl libaio -y && mkdir -p #{siinstall} && cp /vagrant/#{packagename}-*-#{version}.* #{siinstall} && cd #{siinstall} && rpm -Uvh #{packagename}-mdm-#{version}.x86_64.rpm && rpm -Uvh #{packagename}-sds-#{version}.x86_64.rpm && MDM_IP=#{firstmdmip},#{secondmdmip} rpm -Uvh #{packagename}-sdc-#{version}.x86_64.rpm && scli --mdm --add_primary_mdm --primary_mdm_ip #{firstmdmip} --accept_license"
+        node_config.vm.provision "shell" do |s|
+          s.path = "scripts/mdm1.sh"
+          s.args   = "-v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall}"
+        end
       end
 
       if node[:hostname] == "mdm2"
         node_config.vm.network "private_network", ip: "#{secondmdmip}"
-        node_config.vm.provision "shell",
-          inline: "truncate -s 100GB #{device} && yum install numactl libaio -y && mkdir -p #{siinstall} && cp /vagrant/#{packagename}-*-#{version}.* #{siinstall} && cd #{siinstall} && rpm -Uvh #{packagename}-mdm-#{version}.x86_64.rpm && rpm -Uvh #{packagename}-sds-#{version}.x86_64.rpm && MDM_IP=#{firstmdmip},#{secondmdmip} rpm -Uvh #{packagename}-sdc-#{version}.x86_64.rpm && scli --login --mdm_ip #{firstmdmip} --username admin --password admin && scli --mdm_ip #{firstmdmip} --set_password --old_password admin --new_password #{password} && scli --mdm_ip #{firstmdmip} --login --username admin --password #{password} && scli --add_secondary_mdm --mdm_ip #{firstmdmip} --secondary_mdm_ip #{secondmdmip} && scli --add_tb --mdm_ip #{firstmdmip} --tb_ip #{tbip} && scli --switch_to_cluster_mode --mdm_ip #{firstmdmip} && scli --add_protection_domain --mdm_ip #{firstmdmip} --protection_domain_name pdomain && scli --add_sds --mdm_ip #{firstmdmip} --sds_ip #{firstmdmip} --device_path #{device} --sds_name sds1 --protection_domain_name pdomain && scli --add_sds --mdm_ip #{firstmdmip} --sds_ip #{secondmdmip} --device_path #{device} --sds_name sds2 --protection_domain_name pdomain && scli --add_sds --mdm_ip #{firstmdmip} --sds_ip #{tbip} --device_path #{device} --sds_name sds3 --protection_domain_name pdomain && echo \"Waiting for 30 seconds to make sure the SDSs are created\" && sleep 30 && scli --add_volume --mdm_ip #{firstmdmip} --size_gb 8 --volume_name vol1 --protection_domain_name pdomain && scli --map_volume_to_sdc --mdm_ip #{firstmdmip} --volume_name vol1 --sdc_ip #{firstmdmip} --allow_multi_map && scli --map_volume_to_sdc --mdm_ip #{firstmdmip} --volume_name vol1 --sdc_ip #{secondmdmip} --allow_multi_map && scli --map_volume_to_sdc --mdm_ip #{firstmdmip} --volume_name vol1 --sdc_ip #{tbip} --allow_multi_map"
+        node_config.vm.provision "shell" do |s|
+          s.path = "scripts/mdm2.sh"
+          s.args   = "-v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password}"
+        end
       end
     end
   end
