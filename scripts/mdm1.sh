@@ -32,6 +32,10 @@ do
     SECONDMDMIP="$2"
     shift
     ;;
+    -p|--password)
+    PASSWORD="$2"
+    shift
+    ;;
     *)
     # unknown option
     ;;
@@ -57,7 +61,7 @@ MDM_IP=${FIRSTMDMIP},${SECONDMDIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x
 scli --mdm --add_primary_mdm --primary_mdm_ip ${FIRSTMDMIP} --accept_license
 
 sed -i 's/mdm.ip.addresses=/mdm.ip.addresses='${FIRSTMDMIP}','${SECONDMDMIP}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
-sed -i 's/gateway-admin.password=/gateway-admin.password=Scaleio123/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
+sed -i 's/gateway-admin.password=/gateway-admin.password='${PASSWORD}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
 service scaleio-gateway restart
 
 if [[ -n $1 ]]; then

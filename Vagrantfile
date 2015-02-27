@@ -77,7 +77,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "forwarded_port", guest: 6611, host: 6611
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm1.sh"
-          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -p #{password}"
         end
       end
 
