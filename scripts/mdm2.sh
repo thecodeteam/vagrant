@@ -4,6 +4,10 @@ do
   key="$1"
 
   case $key in
+    -o|--os)
+    OS="$2"
+    shift
+    ;;
     -d|--device)
     DEVICE="$2"
     shift
@@ -46,6 +50,7 @@ done
 echo DEVICE  = "${DEVICE}"
 echo INSTALL PATH     = "${INSTALLPATH}"
 echo VERSION    = "${VERSION}"
+echo OS    = "${OS}"
 echo PACKAGENAME    = "${PACKAGENAME}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
@@ -55,9 +60,9 @@ echo PASSWORD    = "${PASSWORD}"
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
 cd /vagrant
-rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.x86_64.rpm
-rpm -Uv ${PACKAGENAME}-sds-${VERSION}.x86_64.rpm
-MDM_IP=${FIRSTMDMIP},${SECONDMDIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.x86_64.rpm
+rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+MDM_IP=${FIRSTMDMIP},${SECONDMDIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
 
 scli --login --mdm_ip ${FIRSTMDMIP} --username admin --password admin
 scli --mdm_ip ${FIRSTMDMIP} --set_password --old_password admin --new_password ${PASSWORD}
@@ -80,3 +85,4 @@ if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"
   tail -1 $1
 fi
+

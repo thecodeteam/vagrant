@@ -16,7 +16,7 @@ domain = 'scaleio.local'
 nodes = ['tb', 'mdm1', 'mdm2']
 
 # add your IPs here
-network = "192.168.50"
+network = "192.168.102"
 
 clusterip = "#{network}.10"
 tbip = "#{network}.11"
@@ -24,7 +24,10 @@ firstmdmip = "#{network}.12"
 secondmdmip = "#{network}.13"
 
 # version of installation package
-version = "1.31-258.2.el6"
+version = "1.31-1277.3"
+
+#OS Version of package
+os="el6"
 
 # installation folder
 siinstall = "/opt/scaleio/siinstall"
@@ -65,7 +68,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "private_network", ip: "#{tbip}"
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/tb.sh"
-          s.args   = "-v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall}"
         end
       end
 
@@ -74,7 +77,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "forwarded_port", guest: 6611, host: 6611
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm1.sh"
-          s.args   = "-v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall}"
         end
       end
 
@@ -82,7 +85,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "private_network", ip: "#{secondmdmip}"
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm2.sh"
-          s.args   = "-v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password}"
         end
       end
     end

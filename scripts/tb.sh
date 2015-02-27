@@ -4,6 +4,10 @@ do
   key="$1"
 
   case $key in
+    -o|--os)
+    OS="$2"
+    shift
+    ;;
     -d|--device)
     DEVICE="$2"
     shift
@@ -37,6 +41,7 @@ done
 echo DEVICE  = "${DEVICE}"
 echo INSTALL PATH     = "${INSTALLPATH}"
 echo VERSION    = "${VERSION}"
+echo OS    = "${OS}"
 echo PACKAGENAME    = "${PACKAGENAME}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
@@ -44,9 +49,9 @@ echo SECONDMDMIP    = "${SECONDMDMIP}"
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
 cd /vagrant
-rpm -Uv ${PACKAGENAME}-tb-${VERSION}.x86_64.rpm
-rpm -Uv ${PACKAGENAME}-sds-${VERSION}.x86_64.rpm
-MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.x86_64.rpm
+rpm -Uv ${PACKAGENAME}-tb-${VERSION}.${OS}.x86_64.rpm
+rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
 
 
 if [[ -n $1 ]]; then
