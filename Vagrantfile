@@ -1,4 +1,5 @@
 # Created by Jonas Rosland, @virtualswede & Matt Cowger, @mcowger
+# Modified to work with ScaleIO IM by Magnus Nilsson, @swevm
 # Many thanks to this post by James Carr: http://blog.james-carr.org/2013/03/17/dynamic-vagrant-nodes/
 
 # vagrant box

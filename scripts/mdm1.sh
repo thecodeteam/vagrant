@@ -56,12 +56,12 @@ yum install java-1.7.0-openjdk -y
 cd /vagrant
 rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
 rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+export GATEWAY_ADMIN_PASSWORD=${PASSWORD}
 rpm -Uv ${PACKAGENAME}-gateway-${VERSION}.noarch.rpm
 MDM_IP=${FIRSTMDMIP},${SECONDMDIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
 scli --mdm --add_primary_mdm --primary_mdm_ip ${FIRSTMDMIP} --accept_license
 
 sed -i 's/mdm.ip.addresses=/mdm.ip.addresses='${FIRSTMDMIP}','${SECONDMDMIP}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
-sed -i 's/gateway-admin.password=/gateway-admin.password='${PASSWORD}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
 service scaleio-gateway restart
 
 if [[ -n $1 ]]; then
