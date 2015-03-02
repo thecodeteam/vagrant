@@ -16,15 +16,15 @@ domain = 'scaleio.local'
 nodes = ['tb', 'mdm1', 'mdm2']
 
 # add your IPs here
-network = "192.168.102"
+network = "192.168.50"
 
 clusterip = "#{network}.10"
 tbip = "#{network}.11"
 firstmdmip = "#{network}.12"
 secondmdmip = "#{network}.13"
 
-# Install ScaleIO cluster automatically or IM only - Do install of ScaleIO using IM and deploy only 3x VMs with IM installed in VM with name mdm1
-clusterinstall = "False"
+# Install ScaleIO cluster automatically or IM only
+clusterinstall = "True" #If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
 
 # version of installation package
 version = "1.31-1277.3"
