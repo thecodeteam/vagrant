@@ -1,5 +1,4 @@
 # Created by Jonas Rosland, @virtualswede & Matt Cowger, @mcowger
-# Modified to work with ScaleIO IM by Magnus Nilsson, @swevm
 # Many thanks to this post by James Carr: http://blog.james-carr.org/2013/03/17/dynamic-vagrant-nodes/
 
 # vagrant box
@@ -23,6 +22,9 @@ clusterip = "#{network}.10"
 tbip = "#{network}.11"
 firstmdmip = "#{network}.12"
 secondmdmip = "#{network}.13"
+
+# Install ScaleIO cluster automatically or IM only - Do install of ScaleIO using IM and deploy only 3x VMs with IM installed in VM with name mdm1
+clusterinstall = "False"
 
 # version of installation package
 version = "1.31-1277.3"
@@ -69,7 +71,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "private_network", ip: "#{tbip}"
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/tb.sh"
-          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -c #{clusterinstall}"
         end
       end
 
@@ -78,7 +80,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "forwarded_port", guest: 6611, host: 6611
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm1.sh"
-          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -p #{password}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -p #{password} -c #{clusterinstall}"
         end
       end
 
@@ -86,7 +88,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "private_network", ip: "#{secondmdmip}"
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm2.sh"
-          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password} -c #{clusterinstall}"
         end
       end
     end

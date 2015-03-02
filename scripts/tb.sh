@@ -32,6 +32,10 @@ do
     SECONDMDMIP="$2"
     shift
     ;;
+    -c|--clusterinstall)
+    CLUSTERINSTALL="$2"
+    shift
+    ;;
     *)
     # unknown option
     ;;
@@ -45,14 +49,17 @@ echo OS    = "${OS}"
 echo PACKAGENAME    = "${PACKAGENAME}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
+echo CLUSTERINSTALL = "${CLUSTERINSTALL}"
 #echo "Number files in SEARCH PATH with EXTENSION:" $(ls -1 "${SEARCHPATH}"/*."${EXTENSION}" | wc -l)
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
 cd /vagrant
-rpm -Uv ${PACKAGENAME}-tb-${VERSION}.${OS}.x86_64.rpm
-rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
-MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
 
+if [ "${CLUSTERINSTALL}" == "True" ]; then
+  rpm -Uv ${PACKAGENAME}-tb-${VERSION}.${OS}.x86_64.rpm
+  rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
+fi
 
 if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"

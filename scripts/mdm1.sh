@@ -36,6 +36,10 @@ do
     PASSWORD="$2"
     shift
     ;;
+    -c|--clusterinstall)
+    CLUSTERINSTALL="$2"
+    shift
+    ;;
     *)
     # unknown option
     ;;
@@ -49,17 +53,23 @@ echo OS    = "${OS}"
 echo PACKAGENAME    = "${PACKAGENAME}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
+echo CLUSTERINSTALL     = "${CLUSTERINSTALL}" 
 #echo "Number files in SEARCH PATH with EXTENSION:" $(ls -1 "${SEARCHPATH}"/*."${EXTENSION}" | wc -l)
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
 yum install java-1.7.0-openjdk -y
 cd /vagrant
-rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
-rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+
+# Always install ScaleIO IM
 export GATEWAY_ADMIN_PASSWORD=${PASSWORD}
 rpm -Uv ${PACKAGENAME}-gateway-${VERSION}.noarch.rpm
-MDM_IP=${FIRSTMDMIP},${SECONDMDIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
-scli --mdm --add_primary_mdm --primary_mdm_ip ${FIRSTMDMIP} --accept_license
+
+if [ "${CLUSTERINSTALL}" == "True" ]; then
+  rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
+  rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
+  MDM_IP=${FIRSTMDMIP},${SECONDMDIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
+  scli --mdm --add_primary_mdm --primary_mdm_ip ${FIRSTMDMIP} --accept_license
+fi
 
 sed -i 's/mdm.ip.addresses=/mdm.ip.addresses='${FIRSTMDMIP}','${SECONDMDMIP}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
 service scaleio-gateway restart
