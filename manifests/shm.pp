@@ -13,7 +13,7 @@ class scaleio::shm (
 	    match => "^tmpfs",
 	    line => "tmpfs  /dev/shm  tmpfs defaults,size=${shm_size}  0 0",
 	} ->
-	if ($::kernelshmmax < 209715200) {
+	if ($::kernelshmmax.scanf("%i")[0] < 209715200) {
 	    exec {'set kernel shmmax' :
 	      command   => 'sysctl -p 209715200',
 	      logoutput => true,
