@@ -53,7 +53,7 @@ class scaleio::os_prep {
   } ->
 
   if 'gui' in $scaleio::params::components or 'gw' in $scaleio::params::components {
-    if !$javaversion or $javaversion < 1.6 {
+    if !$javaversion or $javaversion < "1.6" {
       class{ 'java':
         distribution => 'jdk',
       }
