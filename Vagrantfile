@@ -23,8 +23,14 @@ tbip = "#{network}.11"
 firstmdmip = "#{network}.12"
 secondmdmip = "#{network}.13"
 
+# Install ScaleIO cluster automatically or IM only
+clusterinstall = "True" #If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
+
 # version of installation package
-version = "1.31-258.2.el6"
+version = "1.31-1277.3"
+
+#OS Version of package
+os="el6"
 
 # installation folder
 siinstall = "/opt/scaleio/siinstall"
@@ -65,7 +71,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "private_network", ip: "#{tbip}"
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/tb.sh"
-          s.args   = "-v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -c #{clusterinstall}"
         end
       end
 
@@ -74,7 +80,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "forwarded_port", guest: 6611, host: 6611
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm1.sh"
-          s.args   = "-v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -p #{password} -c #{clusterinstall}"
         end
       end
 
@@ -82,7 +88,7 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "private_network", ip: "#{secondmdmip}"
         node_config.vm.provision "shell" do |s|
           s.path = "scripts/mdm2.sh"
-          s.args   = "-v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password}"
+          s.args   = "-o #{os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -i #{siinstall} -t #{tbip} -p #{password} -c #{clusterinstall}"
         end
       end
     end
