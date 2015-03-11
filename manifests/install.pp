@@ -66,12 +66,21 @@ class scaleio::install inherits scaleio{
   } else { notify {'lia component not specified':}} ->
 
   if 'gw' in $scaleio::params::components {
-    package { $gwpackage[0]:
-      ensure   => latest,
-      provider => 'rpm',
-      source   => "${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm",
-      require  => File["${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm"],
-    } 
+    #package { $gwpackage[0]:
+    #  ensure   => latest,
+    #  provider => 'rpm',
+    #  source   => "${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm",
+    #  require  => File["${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm"],
+    #}
+
+   exec { 
+     $gwpackage[0]: 
+     command => "/usr/bin/rpm -i ${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm", 
+     unless =>"/usr/bin/rpm -qi EMC-ScaleIO-gateway >/dev/null 2>&1",
+     require  => File["${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm"],
+     path => "/etc/alternatives/java",   
+  }
+ 
   } else { notify {'gw component not specified':}} ->
 
   if 'ui' in $scaleio::params::components {
