@@ -13,7 +13,7 @@ class scaleio::install inherits scaleio{
         group  => root,
         source => "puppet:///modules/scaleio/${package_var}.rpm",
     } 
-  }
+  } 
 
   if 'tb' in $scaleio::params::components {
     package { $tbpackage[0]:
@@ -74,10 +74,10 @@ class scaleio::install inherits scaleio{
     #}
 
    exec { 
-     $gwpackage[0]: 
+     'exec ${gwpackage[0]}': 
      command => "/usr/bin/rpm -i ${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm", 
      unless =>"/usr/bin/rpm -qi EMC-ScaleIO-gateway >/dev/null 2>&1",
-     require  => File["${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm"],
+     require  => [Package["java"],File["${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm"],],
      path => "/etc/alternatives/java",   
   }
  
