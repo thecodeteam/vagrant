@@ -1,0 +1,8 @@
+fixtures:
+  symlinks:
+    "scaleio": "#{source_dir}"
+  repositories:
+    "stdlib": "https://github.com/puppetlabs/puppetlabs-stdlib.git"
+    "java": "https://github.com/puppetlabs/puppetlabs-java.git"
+    "dnsquery": "https://github.com/dalen/puppet-dnsquery.git"
+    "firewall": "https://github.com/puppetlabs/puppetlabs-firewall.git"
