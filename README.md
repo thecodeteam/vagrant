@@ -10,12 +10,15 @@ Vagrantfile to create a three-VM EMC ScaleIO lab setup.
 To use this, you'll need to complete a few steps:
 
 1. Click on the "Download ZIP" link on the right side of this page and unpack the zipfile somewhere on your computer, or use `git clone https://github.com/virtualswede/vagrant-scaleio.git` if you have Git installed.
-2. Download the latest 1.31 ScaleIO bits from EMC as per instructions below (you'll need an EMC support account) 
+2. Download the latest 1.31 ScaleIO bits from EMC as per instructions below (you'll need an EMC support account)
 3. Place this zip file in the same directory as the `Vagrantfile` in this repo.
 4. Unzip the files in the zip, and place them next to the `Vagrantfile`.  On most modern \*nix/Mac you could do easily with `unzip ScaleIO_1.31_RHEL6_Download.zip && mv ScaleIO_1.31_RHEL6_Download/*.rpm ./`
 5. Edit the proxies (if needed)
 6. Edit clusterinstall parameter to adjust for different installation methods (default is True which mean a fully working ScaleIO cluster gets installed)
 6. Run `vagrant up` (if you have more than one Vagrant Provider on your machine run `vagrant up --provider virtualbox` instead)
+
+### SSH
+To login to the ScaleIO nodes, use the following commands: ```vagrant ssh mdm1```, ```vagrant ssh mdm2```, or ```vagrant ssh tb```.
 
 ### Clusterinstall function
 
