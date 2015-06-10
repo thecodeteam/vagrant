@@ -27,7 +27,7 @@ secondmdmip = "#{network}.13"
 clusterinstall = "True" #If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
 
 # version of installation package
-version = "1.31-1277.3"
+version = "1.32-402.1"
 
 #OS Version of package
 os="el6"
