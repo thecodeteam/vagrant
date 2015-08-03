@@ -5,6 +5,12 @@ class scaleio::drv_cfg inherits scaleio {
 
   if $mdm_ip {
 	    $drv_mdm = "mdm ${join($mdm_ip,' ')}"
+			file { "/bin/emc":
+	      ensure => "directory",
+	    } ->
+	    file { "/bin/emc/scaleio":
+	      ensure => "directory",
+	    } -> 
 	    file { "$drv_cfg_file":
 	      ensure => present,
 	    } ->
