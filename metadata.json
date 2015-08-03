@@ -1,6 +1,6 @@
 {
   "name": "emccode/scaleio",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "author": "emccode",
   "summary": "Deploy and configure ScaleIO storage components and volumes",
   "license": "Apache 2.0",

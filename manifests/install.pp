@@ -1,105 +1,97 @@
 # the installation part
-class scaleio::install inherits scaleio{
-  
-  each($scaleio::params::components) |$component| {
-    $package_array = getvar("${component}package")
-    $package_name = $package_array[0]
-    $package_version = $package_array[1]
-    $package_var = "${package_name}${package_version}"
- 
-    file { "${scaleio::params::pathpackage}/${package_var}.rpm":
-        mode   => 755,
-        owner  => root,
-        group  => root,
-        source => "puppet:///modules/scaleio/${package_var}.rpm",
-    } 
-  } 
+class scaleio::install inherits scaleio {
 
-  if 'tb' in $scaleio::params::components {
-    package { $tbpackage[0]:
-      ensure   => latest,
-      provider => 'rpm',
-      source   => "${scaleio::params::pathpackage}/${join($tbpackage,"")}.rpm",
-      require  => File["${scaleio::params::pathpackage}/${join($tbpackage,"")}.rpm"],
-    } 
-  } else { notify {'tb component not specified':}}  ->
- 
-  if 'mdm' in $scaleio::params::components {
-    
-    package { ['mutt', 'python', 'python-paramiko']:
-      ensure => present,
-    } -> 
+    notify { "Installing Components: ${scaleio::components}": }
+    ####################################
+    # Installation of tie-breaker (tb) #
+    ####################################
+    if 'tb' in $scaleio::components {
+      package { $scaleio::pkgs['tb']:
+        ensure   => $scaleio::version,
+      }
+    } else {
+      notify { 'component "tb" not specified':  }
+    } ->
 
-    package { $mdmpackage[0]:
-      ensure   => latest,
-      provider => 'rpm',
-      source   => "${scaleio::params::pathpackage}/${join($mdmpackage,"")}.rpm",
-      require  => [Class['::scaleio::shm'],Package['numactl'],File["${scaleio::params::pathpackage}/${join($mdmpackage,"")}.rpm"]],
-    } 
-  } else { notify {'mdm component not specified':}}  ->
- 
-  if 'sds' in $scaleio::params::components {
-    package { $sdspackage[0]:
-      ensure   => latest,
-      provider => 'rpm',
-      source   => "${scaleio::params::pathpackage}/${join($sdspackage,"")}.rpm",
-      require  => File["${scaleio::params::pathpackage}/${join($sdspackage,"")}.rpm"],
-    } 
-  } else { notify {'sds component not specified':}}  ->
+    ###########################################
+    # Installation of meta-data-manager (mdm) #
+    ###########################################
+    if 'mdm' in $scaleio::components {
+      package { ['mutt', 'python', 'python-paramiko' ]:
+        ensure => present,
+      } ->
+      package { $scaleio::pkgs['mdm']:
+        ensure   => $scaleio::version,
+        require  => Class[ '::scaleio::shm' ],
+      }
+    } else {
+      notify {  'component "mdm" not specified':  }
+    } ->
 
-  if 'sdc' in $scaleio::params::components {
-    package { $sdcpackage[0]:
-      ensure   => latest,
-      provider => 'rpm',
-      source   => "${scaleio::params::pathpackage}/${join($sdcpackage,"")}.rpm",
-      require  => File["${scaleio::params::pathpackage}/${join($sdcpackage,"")}.rpm"],
-    } 
-  } else { notify {'sdc component not specified':}} ->
+    ##################################################
+    # Installation of Software-Defined-Storage (sds) #
+    ##################################################
+    if 'sds' in $scaleio::components {
+      package { $scaleio::pkgs['sds']:
+        ensure   => $scaleio::version,
+      }
+    } else {
+      notify {  'component "sds" not specified':  }
+    } ->
 
-  if 'lia' in $scaleio::params::components {
-    package { $liapackage[0]:
-      ensure   => latest,
-      provider => 'rpm',
-      source   => "${scaleio::params::pathpackage}/${join($liapackage,"")}.rpm",
-      require  => File["${scaleio::params::pathpackage}/${join($liapackage,"")}.rpm"],
-    } 
-  } else { notify {'lia component not specified':}} ->
+    ##################################################
+    # Installation of Software-Defined-Client (sdc) #
+    ##################################################
+    if 'sdc' in $scaleio::components {
+      package { $scaleio::pkgs['sdc']:
+        ensure   => $scaleio::version,
+      }
+    } else {
+      notify {  'sdc component not specified':  }
+    } ->
 
-  if 'gw' in $scaleio::params::components {
-    #package { $gwpackage[0]:
-    #  ensure   => latest,
-    #  provider => 'rpm',
-    #  source   => "${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm",
-    #  require  => File["${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm"],
-    #}
+    #######################
+    # Installation of lia #
+    #######################
+    if 'lia' in $scaleio::components {
+      package { $scaleio::pkgs['lia']:
+        ensure   => $scaleio::version,
+      }
+    } else {
+      notify {  'lia component not specified':  }
+    } ->
 
-   exec { 
-     'exec ${gwpackage[0]}': 
-     command => "/usr/bin/rpm -i ${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm", 
-     unless =>"/usr/bin/rpm -qi EMC-ScaleIO-gateway >/dev/null 2>&1",
-     require  => [Package["java"],File["${scaleio::params::pathpackage}/${join($gwpackage,"")}.rpm"],],
-     path => "/etc/alternatives/java",   
-  }
- 
-  } else { notify {'gw component not specified':}} ->
+    ###########################################
+    # Installation of Gateway/WebService (gw) #
+    ###########################################
+    if 'gw' in $scaleio::components {
+      package { $scaleio::pkgs['gw']:
+        ensure   => $scaleio::version,
+        require  => Package[ 'java' ],
+      }
+    } else {
+      notify {  'gw component not specified': }
+    } ->
 
-  if 'ui' in $scaleio::params::components {
-    package { $uipackage[0]:
-      ensure   => latest,
-      provider => 'rpm',
-      source   => "${scaleio::params::pathpackage}/${join($uipackage,"")}.rpm",
-      require  => File["${scaleio::params::pathpackage}/${join($uipackage,"")}.rpm"],
-    } 
-  } else { notify {'ui component not specified':}} ->
+    ##################################################
+    # Installation of Graphical User Interface (gui) #
+    ##################################################
+    if 'gui' in $scaleio::components {
+      package { $scaleio::pkgs['gui']:
+      ensure   => $scaleio::version,
+      }
+    } else {
+      notify {  'gui component not specified': }
+    } ->
 
-  if 'callhome' in $scaleio::params::components {
-    package { $callhomepackage[0]:
-      ensure   => latest,
-      provider => 'rpm',
-      source   => "${scaleio::params::pathpackage}/${join($callhomepackage,"")}.rpm",
-      require  => File["${scaleio::params::pathpackage}/${join($callhomepackage,"")}.rpm"],
-    } 
-  } else { notify {'callhome component not specified':}} 
-
+    #############################
+    # Installation of callhome  #
+    #############################
+    if 'callhome' in $scaleio::components {
+      package { $scaleio::pkgs['callhome']:
+        ensure   => $scaleio::version,
+      }
+    } else {
+      notify {  'callhome component not specified': }
+    }
 }
-

@@ -1,3 +1,13 @@
+## 0.1.7
+- Code Clean-up:
+  Unused variables, indentation, etc...
+- Hierarchy implementation:
+  Params (Default Configurations) -> Scaleio (User Configurations) -> Modules (inherits)
+- Configuration check:
+  Array, string, integer, boolean, etc...
+- install.pp
+  Installation of ScaleIO packages adopting O.S Repository
+- Created Vagrant for testbed under tests folder
 
 ## 0.1.2
 

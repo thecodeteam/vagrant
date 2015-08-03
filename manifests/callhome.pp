@@ -1,9 +1,7 @@
 
-class scaleio::callhome (
-	$components   = $scaleio::params::components,
-	$callhome_cfg = $scaleio::params::callhome_cfg
-){
-  if 'callhome' in $components {
+class scaleio::callhome inherits scaleio {
+
+  if 'callhome' in $scaleio::components {
     file {'Callhome configuration' :
       ensure  => present,
       path    => '/opt/emc/scaleio/callhome/cfg/conf.txt',
@@ -11,5 +9,7 @@ class scaleio::callhome (
       mode    => '0644',
       content => template('scaleio/callhome.erb'),
     }
-  } else { notify {'Callhome - callhome component not specified':}}
+  } else {
+    notify {  'Callhome - callhome component not specified':  }
+  }
 }

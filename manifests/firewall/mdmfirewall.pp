@@ -7,5 +7,4 @@ class scaleio::firewall::mdmfirewall {
     action => accept,
   }
 
-
 }
