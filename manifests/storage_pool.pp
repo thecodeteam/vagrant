@@ -3,7 +3,6 @@ class scaleio::storage_pool inherits scaleio {
   $mdm_ip                  = $scaleio::mdm_ip
   $components              = $scaleio::components
   $sio_sds_device          = $scaleio::sio_sds_device
-  $storage_pool            = $scaleio::storage_pool
 
     if $mdm_ip[1] in $ip_address_array and 'mdm' in $components and $scaleio_mdm_state == 'Running' {
       if($sio_sds_device) {

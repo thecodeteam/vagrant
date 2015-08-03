@@ -52,7 +52,7 @@ class scaleio (
   if $shm_size          { validate_string(shm_size)        }
   if $sds_network       { validate_string($sds_network)     }
   if $sio_sdc_volume    { validate_hash($sio_sdc_volume)    }
-  if $sio_sdc_device    { validate_hash($sio_sdc_device)    }
+  if $sio_sds_device    { validate_hash($sio_sds_device)    }
   if $sds_ssd_env_flag  { validate_bool($sds_ssd_env_flag)  }
   if $use_ssd           { validate_bool($use_ssd)           }
   if $version           { validate_string($version)         }

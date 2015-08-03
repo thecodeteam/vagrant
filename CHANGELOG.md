@@ -1,3 +1,7 @@
+## 0.1.7a
+- Code Clean-up:
+  Unused variables and typos.
+
 ## 0.1.7
 - Code Clean-up:
   Unused variables, indentation, etc...

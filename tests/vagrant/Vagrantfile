@@ -91,7 +91,7 @@ Vagrant.configure('2') do |config|
     EOF
     node.vm.provision :shell, :inline => bootstrap_script
     node.vm.synced_folder "puppet", "/opt/puppet"
-    node.vm.synced_folder "/Users/victor/Develop/GitHub/puppet-scaleio", "/etc/puppet/modules/scaleio"
+    node.vm.synced_folder "../../", "/etc/puppet/modules/scaleio"
 
   end
 
