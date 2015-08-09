@@ -1,73 +1,61 @@
 
 class scaleio (
 
-  $enable_cluster_mode  = $scaleio::params::enable_cluster_mode,
   $cluster_name         = $scaleio::params::cluster_name,
   $components           = $scaleio::params::components,
-  $config               = $scaleio::params::config,
   $callhome_cfg         = $scaleio::params::callhome_cfg,
-  $ensure               = $scaleio::params::ensure,
+  $default_password     = $scaleio::params::default_password,
+  $drv_cfg_file         = $scaleio::params::drv_cfg_file,
+  $enable_cluster_mode  = $scaleio::params::enable_cluster_mode,
+  $gw_password          = $scaleio::params::gwpassword,
   $interface            = $scaleio::params::interface,
   $license              = $scaleio::params::license,
-  $mdm_management_ip    = $scaleio::params::mdm_management_ip,
+  $mdm_ip               = $scaleio::params::mdm_ip,
   $path                 = $scaleio::params::path,
   $password             = $scaleio::params::password,
-  $gw_password          = $scaleio::params::gwpassword,
-  $primary_mdm          = $scaleio::params::primary_mdm,
-  $secondary_mdm        = $scaleio::params::secondary_mdm,
+  $pkgs                 = $scaleio::params::pkgs,
   $tb_ip                = $scaleio::params::tb_ip,
+  $shm_size             = $scaleio::params::shm_size,
+  $sds_network          = $scaleio::params::sds_network,
+  $sio_sds_device       = $scaleio::params::sio_sds_device,
+  $sio_sdc_volume       = $scaleio::params::sio_sdc_volume,
+  $sds_ssd_env_flag     = $scaleio::params::sds_ssd_env_flag,
   $use_ssd              = $scaleio::params::use_ssd,
-  $version              = $scaleio::params::version,
+  $version              = $scaleio::params::version
   ) inherits scaleio::params {
 
+# Mandatory Parameters
+  validate_array($components)
+  validate_array($mdm_ip)
+  validate_string($tb_ip)
+
+# Need to define cluster name if cluster is enabled
+  if $enable_cluster_mode {
     validate_bool($enable_cluster_mode)
-    if $cluster_name { validate_string($cluster_name) }
-    validate_array($components)
-    if $callhome_cfg { validate_hash($callhome_cfg) }
-    validate_string($ensure)
-    validate_string($interface)
-    validate_string($license)
-    validate_absolute_path($path)
-    if $scaleio::params::primary_mdm {
-      validate_re($password, '^.{6,31}$')
-    }
-    #if $scaleio::params::components =~/gw/ {
-    #  validate_re($gw_password, '^.{6,31}$')
-    #}
-    validate_string($eversion)
-    if $use_ssd {
-      validate_bool($use_ssd)
-    }
-  
-    # Only validate the MDM IP for SDC installs
-   # if $components =~/sdc/ {
-   #   validate_re($mdm_management_ip, '^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$')
-   # }
-
-    if $cluster_name {
-      validate_string($cluster_name)
-    }
-
-  # Only validate the IP addresses if config is run
-  #if $config {
-  #  validate_re($password, '^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).*$')
-  #  validate_re($mdm_management_ip, '^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$')
-  #  validate_re($primary_mdm, '^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$')
-  #  validate_re($secondary_mdm, '^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$')
-  #}
+    validate_string($cluster_name)
+  }
 
   if 'tb' in $components and 'mdm' in $components {
     fail('Invalid ScaleIO component selection - cannot Install TB and MDM components on the same system')
   }
 
-    #if ($::lsbdistrelease < '5.5') {
-    #  fail("ScaleIO version ${version} not supported on ${::osfamily} ${::lsbdistrelease}.")
-    #}
-
- #   if $component =~/lia/ and $version =~/^1.2/ {
-  #    fail("ScaleIO LIA is not supported on ScaleIO version ${version}")
-  #  }
-
+# The rest of parameters are optional
+  if $callhome_cfg      { validate_hash($callhome_cfg)      }
+  if $default_password  { validate_string($default_password)}
+  if $drv_cfg_file      { validate_string($drv_cfg_file)    }
+  if $gw_password       { validate_string($gw_password)     }
+  if $interface         { validate_string($interface)       }
+  if $license           { validate_string($license)         }
+  if $path              { validate_absolute_path($path)     }
+  if $password          { validate_string($password)        }
+  if $pkgs              { validate_hash($pkgs)              }
+  if $shm_size          { validate_string(shm_size)        }
+  if $sds_network       { validate_string($sds_network)     }
+  if $sio_sdc_volume    { validate_hash($sio_sdc_volume)    }
+  if $sio_sds_device    { validate_hash($sio_sds_device)    }
+  if $sds_ssd_env_flag  { validate_bool($sds_ssd_env_flag)  }
+  if $use_ssd           { validate_bool($use_ssd)           }
+  if $version           { validate_string($version)         }
 
   include '::scaleio::login'
   include '::scaleio::iptables'
@@ -87,14 +75,20 @@ class scaleio (
   include '::scaleio::gateway'
   include '::scaleio::callhome'
 
-  Class['::scaleio::iptables'] -> Class['::scaleio::drv_cfg'] -> 
-    Class['::scaleio::device'] ->  Class['::scaleio::os_prep'] -> Class['::scaleio::install'] ->
-      Class['::scaleio::mdm'] -> Class['::scaleio::protection_domain'] -> Class['::scaleio::storage_pool'] ->
-        Class['::scaleio::sds_first'] -> Class['::scaleio::sds'] -> Class['::scaleio::sds_sleep'] -> 
-          Class['::scaleio::volume'] -> Class['::scaleio::map_volume'] -> Class['::scaleio::gateway'] -> Class['::scaleio::callhome']
-            
-
+  Class['::scaleio::iptables']          ->
+  Class['::scaleio::device']            ->
+  Class['::scaleio::drv_cfg']           ->
+  Class['::scaleio::os_prep']           ->
+  Class['::scaleio::install']           ->
+  Class['::scaleio::mdm']               ->
+  Class['::scaleio::protection_domain'] ->
+  Class['::scaleio::storage_pool']      ->
+  Class['::scaleio::sds_first']         ->
+  Class['::scaleio::sds']               ->
+  Class['::scaleio::sds_sleep']         ->
+  Class['::scaleio::volume']            ->
+  Class['::scaleio::map_volume']        ->
+  Class['::scaleio::gateway']           ->
+  Class['::scaleio::callhome']
 
 }
-
-

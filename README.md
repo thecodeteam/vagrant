@@ -32,11 +32,28 @@ Most aspects of configuration of ScaleIO have been brought into Puppet.  This me
 * Installs firewall (iptables) settings based on ScaleIO components installed
 * Tested with Puppet 3.7.2+
 	* puppet.conf [main] - parser = “future”
-* Tested with ScaleIO 1.30-426+
+    * NOTE: This options bugs with foreman.
+* Tested with ScaleIO 1.30-426+, 1.32-401
 
 ### Setup Requirements
 
-* Requires separately downloadable ScaleIO RPMs
+* Requires ScaleIO RPMs available through yum/zypper/platform-specific repository
+
+  EMC-ScaleIO-callhome.x86_64 : scaleio callhome package
+  EMC-ScaleIO-callhome.i386 : scaleio callhome package
+  EMC-ScaleIO-lia.x86_64 : scaleio lia package
+  EMC-ScaleIO-lia.i386 : scaleio lia package
+  EMC-ScaleIO-mdm.x86_64 : scaleio meta-data manager package
+  EMC-ScaleIO-mdm.i386 : scaleio meta-data manager package
+  EMC-ScaleIO-sdc.x86_64 : scaleio sdc package
+  EMC-ScaleIO-sdc.i386 : scaleio sdc package
+  EMC-ScaleIO-sds.x86_64 : scaleio sds package
+  EMC-ScaleIO-sds.i386 : scaleio sds package
+  EMC-ScaleIO-tb.x86_64 : scaleio tb package
+  EMC-ScaleIO-tb.i386 : scaleio tb package
+  EMC-ScaleIO-gateway.noarch : rpm
+  EMC-ScaleIO-gui.noarch : gui-rpm
+
 
 Required modules to install
 
@@ -44,7 +61,7 @@ Required modules to install
 	puppet module install puppetlabs-firewall
 	puppet module install puppetlabs-java
 
-	
+
 Optional module to install
 
 	puppet module install dalen-dnsquery
@@ -74,29 +91,29 @@ Here we have the sio_sds_device hash that holds the configuration parameters nec
 	$sio_sds_device = {
 	          $tb_fqdn => {
 	            'ip' => hosts_lookup($tb_fqdn)[0],
-	            'protection_domain' => 'protection_domain1', 
+	            'protection_domain' => 'protection_domain1',
 	            'devices' => {
-	              '/opt/sio_device1' => {  'size' => '100GB', 
-	                                                'storage_pool' => 'capacity'
-	                                              },
+	              '/opt/sio_device1' => {  'size' => '100GB',
+                                         'storage_pool' => 'capacity'
+                                      },
 	            }
 	          },
 	          $mdm_fqdn[0] => {
 	            'ip' => hosts_lookup($mdm_fqdn[0])[0],
 	            'protection_domain' => 'protection_domain1',
 	            'devices' => {
-	              '/opt/sio_device1' => {  'size' => '100GB', 
-	                                                'storage_pool' => 'capacity'
-	                                              },
+	              '/opt/sio_device1' => {  'size' => '100GB',
+                                         'storage_pool' => 'capacity'
+                                      },
 	            }
 	          },
 	          $mdm_fqdn[1] => {
 	            'ip' => hosts_lookup($mdm_fqdn[1])[0],
 	            'protection_domain' => 'protection_domain1',
 	            'devices' => {
-	              '/opt/sio_device1' => {  'size' => '100GB', 
-	                                                'storage_pool' => 'capacity'
-	                                              },
+	              '/opt/sio_device1' => {  'size' => '100GB',
+                                         'storage_pool' => 'capacity'
+                                      },
 	            }
 	          },
 	        }
@@ -104,14 +121,14 @@ Here we have the sio_sds_device hash that holds the configuration parameters nec
 The sio_sdc_volume hash declares volumes that are to be created and the mapping of these volumes to specific clients.
 
 	$sio_sdc_volume = {
-	          'volume1' => { 'size_gb' => 8, 
-	          'protection_domain' => 'protection_domain1', 
+	          'volume1' => { 'size_gb' => 8,
+	          'protection_domain' => 'protection_domain1',
 	          'storage_pool' => 'capacity',
 	          'sdc_ip' => [
 	              hosts_lookup($tb_fqdn)[0],
 	              hosts_lookup($mdm_fqdn[0])[0],
 	              hosts_lookup($mdm_fqdn[1])[0],
-	            ] 
+	            ]
 	          },
 	        }
 
@@ -138,7 +155,7 @@ Notice that there are extra fields being represented in the node classifications
 The following is a Tie-Breaker node.
 
 	node /tb/ {
-	  class {'scaleio::params':
+	  class {'::scaleio':
 	        password => $password,
 	        version => $version,
 	        mdm_ip => $mdm_ip,
@@ -146,15 +163,14 @@ The following is a Tie-Breaker node.
 	        callhome_cfg => $callhome_cfg,
 	        sio_sds_device => $sio_sds_device,
 	        sds_ssd_env_flag => true,
-	        components => ['tb','sds','sdc'],
+	        components => ['tb','sds','sdc','lia'],
 	  }
-	  include scaleio
 	}
 
 The following is an MDM node.
 
 	node /mdm/ {
-	  class {'scaleio::params':
+	  class {'::scaleio':
 	        password => $password,
 	        version => $version,
 	        mdm_ip => $mdm_ip,
@@ -163,47 +179,43 @@ The following is an MDM node.
 	        sio_sds_device => $sio_sds_device,
 	        sio_sdc_volume => $sio_sdc_volume,
 	        callhome_cfg => $callhome_cfg,
-	        components => ['mdm','sds','sdc','callhome'],
+	        components => ['mdm','sds','sdc','callhome','lia'],
 	  }
-	  include scaleio
 	}
 
 The following is an SDS node.
 
 	node /sds/ {
-	  class {'scaleio::params':
+	  class {'::scaleio':
 	        password => $password,
 	        version => $version,
 	        mdm_ip => $mdm_ip,
 	        sio_sds_device => $sio_sds_device,
 	        sds_ssd_env_flag => true,
-	        components => ['sds'],
+	        components => ['sds','lia'],
 	  }
-	  include scaleio
 	}
 
 The following is an SDC node.
 
 	node /sdc/ {
-	  class {'scaleio::params':
+	  class {'::scaleio':
 	        password => $password,
 	        version => $version,
 	        mdm_ip => $mdm_ip,
-	        components => ['sdc'],
+	        components => ['sdc', 'lia'],
 	  }
-	  include scaleio
 	}
 
 The following is a Gateway node.
 
 	node /gw/ {
-	  class {'scaleio::params':
+	  class {'::scaleio':
 	        gw_password => $gw_password,
 	        version => $version,
 	        mdm_ip => $mdm_ip,
 	        components => ['gw'],
 	  }
-	  include scaleio
 	}
 
 
@@ -238,3 +250,4 @@ We encourage the community to actively contribute to this module.
 * Eoghan Kelleher
 * Jonas Rosland
 * Clint Kitson
+* Victor da Costa

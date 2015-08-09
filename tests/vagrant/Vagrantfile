@@ -1,0 +1,140 @@
+Vagrant.require_version ">= 1.5.0"
+require 'vagrant-hosts'
+require 'vagrant-auto_network'
+
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
+
+# these are the internal IPs, alternate IPs are auto-assigned using vagrant-auto_network
+puppetmaster_nodes = {
+  'puppetmaster' => {
+    :ip => '192.168.50.9', :hostname => 'puppetmaster', :domain => 'scaleio.local', :memory => 1024, :cpus => 1
+  }
+}
+
+# these are the internal IPs, alternate IPs are auto-assigned using vagrant-auto_network
+scaleio_nodes = {
+  'tb' => { :ip => '192.168.50.11', :hostname => 'tb', :domain => 'scaleio.local', :memory => 1024, :cpus => 1 },
+  'mdm1' => { :ip => '192.168.50.12', :hostname => 'mdm1', :domain => 'scaleio.local', :memory => 1024, :cpus => 1 },
+  'mdm2' => { :ip => '192.168.50.13', :hostname => 'mdm2', :domain => 'scaleio.local', :memory => 1024, :cpus => 1 },
+}
+
+# (optional) specify download path, or skip by removing path and leaving "", or copy scaleio rpms manually
+# to puppet/modules/scaleio/files and update
+# $version and $rpm_suffix in site.pp file
+download_scaleio = "ftp://ftp.emc.com/Downloads/ScaleIO/ScaleIO_RHEL6_Download.zip"
+
+Vagrant.configure('2') do |config|
+
+  config.vm.define puppetmaster_nodes['puppetmaster'][:hostname] do |node|
+    node_hash = puppetmaster_nodes['puppetmaster']
+    node.vm.box = 'puppetlabs/centos-6.6-64-nocm'
+    node.vm.hostname = "#{node_hash[:hostname]}.#{node_hash[:domain]}"
+    node.vm.provider "vmware_fusion" do |vb|
+      vb.memory = node_hash[:memory] || 1024
+      vb.cpus = node_hash[:cpus] || 1
+    end
+
+    node.vm.network :private_network, :ip => node_hash[:ip]
+    node.vm.network :private_network, :auto_network => true
+
+    # Use vagrant-hosts to add entries to /etc/hosts for each virtual machine
+    # in this file.
+    node.vm.provision :hosts
+
+    bootstrap_script = <<-EOF
+    if which puppet > /dev/null 2>&1; then
+      echo 'Puppet Installed.'
+    else
+      yum remove -y firewalld && yum install -y iptables-services && iptables --flush
+      echo 'Installing Puppet Master.'
+      yum --nogpgcheck -y install http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-11.noarch.rpm
+      yum --nogpgcheck -y install puppet-server puppet
+      echo '*.#{node_hash[:domain]}' > /etc/puppet/autosign.conf
+      puppet module install puppetlabs-stdlib
+      puppet module install puppetlabs-firewall
+      puppet module install puppetlabs-java
+      #puppet module install emccode-scaleio
+      cp -Rf /opt/puppet/* /etc/puppet/.
+      puppet config set --section main parser future
+      puppet config set --section master certname puppetmaster.#{node_hash[:domain]}
+      puppet resource service iptables ensure=stopped enable=false
+      puppet resource service puppetmaster ensure=running enable=true
+      puppet resource service nfs ensure=running enable=true
+      puppet resource service rpcbind ensure=running enable=true
+
+      echo 'Downloading Scaleio Package'
+      yum --nogpgcheck -y install unzip
+      echo 'Performing a ~250MB download of ScaleIO RPMs'
+      wget -nv #{download_scaleio} -O /tmp/ScaleIO_RHEL6_Download.zip
+
+      echo 'Creating Scaleio Local Repository'
+      mkdir -p /tmp/scaleio /mnt/scaleio/RedHat
+      unzip /tmp/ScaleIO_RHEL6_Download.zip -d /tmp/scaleio
+      cp -a /tmp/scaleio/*RHEL6*/* /mnt/scaleio/RedHat
+      cp -a /tmp/scaleio/*/*noarch* /mnt/scaleio/RedHat
+
+      echo "[scaleio-repo]" >> /mnt/scaleio/local-scaleio.repo
+      echo "name = Scaleio-Repo" >> /mnt/scaleio/local-scaleio.repo
+      echo "baseurl = file:///mnt/scaleio" >> /mnt/scaleio/local-scaleio.repo
+      echo "enabled=1" >> /mnt/scaleio/local-scaleio.repo
+      echo "gpgcheck=0" >> /mnt/scaleio/local-scaleio.repo
+      echo "protect=1" >> /mnt/scaleio/local-scaleio.repo
+
+      yum --nogpgcheck -y install createrepo
+      createrepo /mnt/scaleio
+
+      echo "/mnt/scaleio 0.0.0.0/0(ro,async,insecure)" >>/etc/exports
+      echo "/mnt/scaleio 192.168.50.0/24(ro,async,insecure)" >>/etc/exports
+      exportfs -ra
+
+    fi
+    EOF
+    node.vm.provision :shell, :inline => bootstrap_script
+    node.vm.synced_folder "puppet", "/opt/puppet"
+    node.vm.synced_folder "../../", "/etc/puppet/modules/scaleio"
+
+  end
+
+  scaleio_nodes.each do |node_name,value|
+    config.vm.provision :hosts do |provisioner|
+      provisioner.add_host puppetmaster_nodes['puppetmaster'][:ip],
+      ["#{puppetmaster_nodes['puppetmaster'][:hostname]}.#{puppetmaster_nodes['puppetmaster'][:domain]}","#{puppetmaster_nodes['puppetmaster'][:hostname]}"]
+    end
+
+    config.vm.define node_name do |node|
+      node_hash = scaleio_nodes[node_name]
+      node.vm.box = 'puppetlabs/centos-6.6-64-nocm'
+      node.vm.hostname = "#{node_hash[:hostname]}.#{node_hash[:domain]}"
+      node.vm.provider "vmware_fusion" do |vb|
+        vb.memory = node_hash[:memory] || 1024
+        vb.cpus = node_hash[:cpus] || 1
+      end
+
+      node.vm.network :private_network, :ip => node_hash[:ip]
+      node.vm.network :private_network, :auto_network => true
+
+      # Set up Puppet Agent to automatically connect with Puppet master
+      bootstrap_script = <<-EOF
+      ln -s /bin/rpm /usr/bin/rpm &> /dev/null
+      if which puppet > /dev/null 2>&1; then
+        echo 'Puppet Installed.'
+      else
+        echo 'Mapping ScaleIO Local Repository'
+        mkdir -p /mnt/scaleio
+        mount -t nfs -o ro puppetmaster.scaleio.local:/mnt/scaleio /mnt/scaleio
+        cp /mnt/scaleio/local-scaleio.repo /etc/yum.repos.d/
+        yum repolist
+        yum search scaleio
+
+        echo 'Installing Puppet Agent.'
+        rpm -ivh http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-11.noarch.rpm
+        yum --nogpgcheck -y install puppet
+        puppet config set --section main server #{puppetmaster_nodes['puppetmaster'][:hostname]}.#{puppetmaster_nodes['puppetmaster'][:domain]}
+        puppet agent -t --detailed-exitcodes || [ $? -eq 2 ]
+
+      fi
+      EOF
+      node.vm.provision :shell, :inline => bootstrap_script
+    end
+  end
+end

@@ -1,10 +1,9 @@
 
-class scaleio::gateway (
-  $components  = $scaleio::params::components,
-  $mdm_ip      = $scaleio::params::mdm_ip,
-  $gw_password = $scaleio::params::gw_password
-){
-  
+class scaleio::gateway inherits scaleio {
+  $components  = $scaleio::components
+  $mdm_ip      = $scaleio::mdm_ip
+  $gw_password = $scaleio::gw_password
+
   if 'gw' in $components {
 
     file_line { 'Set MDM IP addresses':
@@ -24,7 +23,7 @@ class scaleio::gateway (
       path => "/etc/alternatives",
       refreshonly => true,
     } ~>
-    
+
     exec { 'Manually restart scaleio-gateway':
       command     => "service scaleio-gateway restart",
       path        => '/sbin',

@@ -7,5 +7,4 @@ class scaleio::firewall::tbfirewall {
     action => accept,
   }
 
-
 }

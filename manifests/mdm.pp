@@ -1,19 +1,19 @@
 
-class scaleio::mdm (
-  $enable_cluster_mode     = $scaleio::params::enable_cluster_mode,
-  $cluster_name            = $scaleio::params::cluster_name,
-  $password                = $scaleio::params::password,
-  $tb_ip                   = $scaleio::params::tb_ip,
-  $version                 = $scaleio::params::version,
-  $default_password        = $scaleio::params::default_password,
-  $mdm_ip                  = $scaleio::params::mdm_ip,
-  $components              = $scaleio::params::components,
-  $sio_sdc_volume          = $scaleio::params::sio_sdc_volume
-) {
+class scaleio::mdm inherits scaleio {
+
+  $enable_cluster_mode     = $scaleio::enable_cluster_mode
+  $cluster_name            = $scaleio::cluster_name
+  $password                = $scaleio::password
+  $tb_ip                   = $scaleio::tb_ip
+  $version                 = $scaleio::version
+  $default_password        = $scaleio::default_password
+  $mdm_ip                  = $scaleio::mdm_ip
+  $components              = $scaleio::components
+  $sio_sdc_volume          = $scaleio::sio_sdc_volume
 
   if 'mdm' in $components {
     file_line { 'Append line for mdm_ip to /etc/environment':
-        path => '/etc/environment',  
+        path => '/etc/environment',
         match => "^mdm_ip=",
         line => "mdm_ip=${join($mdm_ip,',')}",
     } ->
@@ -31,6 +31,8 @@ class scaleio::mdm (
     if $mdm_ip[1] in $ip_address_array {
       notify { "scaleio_secondary_ip = '${scaleio_secondary_ip}'":}  ->
       notify { "scaleio_mdm_state = '${scaleio_mdm_state}'":}  ->
+      notify { "default_password: $default_passwod, password: $password": } ->
+      notify { "MDMs: $mdm_ip": } ->
       # !facter represents a missing facter, hence a first puppet run before mdm service
       if $scaleio_mdm_state == 'Running' and !$scaleio_secondary_ip {
         exec { '1st Login':
@@ -51,10 +53,10 @@ class scaleio::mdm (
         }
       }  else { notify {'Skipped Password Set and 2nd MDM Add':} }
     } else { notify {'Skipped MDM Configuration - Part One':} } ->
-    
+
     Class["::scaleio::login"] ->
 
-    if $mdm_ip[1] in $ip_address_array and $scaleio_mdm_state == 'Running' {          
+    if $mdm_ip[1] in $ip_address_array and $scaleio_mdm_state == 'Running' {
       #using mdm_ip versus scaleio_primary_ip since scaleio_primary_ip may not be populated if first run
       notify {'This is the secondary MDM':} ->
       notify {"scaleio_tb_ip= '${scaleio_tb_ip}'":} ->
@@ -65,7 +67,7 @@ class scaleio::mdm (
           require => Class['::scaleio::login']
         }
       } else { notify {'Tie-Breaker already exists':} } ->
-      
+
       if $enable_cluster_mode {
         exec { 'Switch to Cluster Mode':
           command => "scli --mdm_ip ${mdm_ip[0]} --switch_to_cluster_mode",
@@ -74,7 +76,7 @@ class scaleio::mdm (
           require => Class['::scaleio::login']
         }
       } else { notify {'Cluster Mode not required':} } ->
-      
+
       if $cluster_name {
         exec { 'Rename Cluster':
           command => "scli --mdm_ip ${mdm_ip[0]} --rename_system --new_name '${cluster_name}'",
@@ -82,10 +84,8 @@ class scaleio::mdm (
           unless  => "scli --query_cluster --mdm_ip ${mdm_ip[0]} | grep \"Name: ${cluster_name}\"",
           require => Class['::scaleio::login']
         }
-      } else { notify {'Cluster Name not specified':} } 
-      
-    } else { notify {'Skipped MDM Configuration - Part Two':} } 
+      } else { notify {'Cluster Name not specified':} }
+
+    } else { notify {'Skipped MDM Configuration - Part Two':} }
   }
 }
-
-
