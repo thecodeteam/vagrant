@@ -58,7 +58,7 @@ echo CLUSTERINSTALL     = "${CLUSTERINSTALL}"
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
 yum install java-1.7.0-openjdk -y
-cd /vagrant/scaleio/ScaleIO_1.32_RHEL6_Download
+cd /vagrant/scaleio/ScaleIO_1.32.2_RHEL6_Download
 
 # Always install ScaleIO IM
 #export GATEWAY_ADMIN_PASSWORD=${PASSWORD}
