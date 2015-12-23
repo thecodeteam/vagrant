@@ -54,9 +54,9 @@ echo CLUSTERINSTALL = "${CLUSTERINSTALL}"
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio wget -y
 cd /vagrant
-wget -nv ftp://ftp.emc.com/Downloads/ScaleIO/ScaleIO_RHEL6_Download.zip -O ScaleIO_RHEL6_Download.zip
+wget -nv http://downloads.emc.com/emc-com/usa/ScaleIO/ScaleIO_1.32.2_Linux_SW_Download.zip -O ScaleIO_RHEL6_Download.zip
 unzip -o ScaleIO_RHEL6_Download.zip -d /vagrant/scaleio/
-cd /vagrant/scaleio/ScaleIO_1.32_RHEL6_Download
+cd /vagrant/scaleio/ScaleIO_1.32.2_RHEL6_Download
 
 if [ "${CLUSTERINSTALL}" == "True" ]; then
   rpm -Uv ${PACKAGENAME}-tb-${VERSION}.${OS}.x86_64.rpm
