@@ -4,9 +4,9 @@ rexray:
   logLevel: warn
   storageDrivers:
   - virtualbox
-  mount:
-    volume:
-      preempt: false      
+  volume:
+    mount:
+      preempt: false
 virtualbox:
   endpoint: http://10.0.2.2:18083
   tls: false

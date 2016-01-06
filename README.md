@@ -6,8 +6,10 @@ Docker as the container runtime.  This can be used as a quick way
 to get started with and learn how data persistence for containers
 works.
 
-The `VirtualBox` storage driver that's in REX-Ray, is essentially hot-plugging SATA devices to the Vagrant VMs.  This enables the
-persistent volumes for containers to be moved between container enabling container hosts to be immutable and containers to remain non-persistent.
+The `VirtualBox` storage driver that's in REX-Ray, is essentially hot-plugging
+SATA devices to the Vagrant VMs.  This enables the persistent volumes to be
+moved between containers, which allow container hosts to be immutable and
+containers to remain non-persistent.
 
 Requirements
 - Vagrant installed

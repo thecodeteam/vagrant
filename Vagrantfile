@@ -34,7 +34,7 @@ Vagrant.configure(2) do |config|
         sed -i '/.*volumePath.*/c\\\x20\x20volumePath: \"#{dir}\"' /etc/rexray/config.yml
 
         ## Optionally set preemption
-        #sed -i '/.*preempt.*/c\\\x20\x20\x20\x20\x20\x20preempt: true' /etc/rexray/config.yml
+        sed -i '/.*preempt.*/c\\\x20\x20\x20\x20\x20\x20preempt: true' /etc/rexray/config.yml
 
         /bin/systemctl start  docker.service
       SHELL
