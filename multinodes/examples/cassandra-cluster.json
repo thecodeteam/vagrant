@@ -1,18 +1,19 @@
 {
 	"id": "cassandra-cluster",
 	"groups": [{
+		"id": "cluster1",
 		"apps": [{
 			"id": "cassandra1",
 			"container": {
 				"docker": {
-					"image": "cakesolutions/cassandra:cluster",
+					"image": "jonasrosland/docker-cassandra:cluster",
 					"privileged": true,
 					"parameters": [{
-						"key": "CASSANDRA_CLUSTERNAME",
-						"value": "cassandra-cluster"
+						"key": "env",
+						"value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"
 					}, {
-						"key": "CASSANDRA_SEEDS",
-						"value": "172.31.2.11,172.31.2.12,172.31.2.13"
+						"key": "env",
+						"value": "CASSANDRA_SEEDS=172.31.2.11,172.31.2.12,172.31.2.13"
 					}, {
 						"key": "volume-driver",
 						"value": "rexray"
@@ -35,14 +36,14 @@
 			"id": "cassandra2",
 			"container": {
 				"docker": {
-					"image": "cakesolutions/cassandra:cluster",
+					"image": "jonasrosland/docker-cassandra:cluster",
 					"privileged": true,
 					"parameters": [{
-						"key": "CASSANDRA_CLUSTERNAME",
-						"value": "cassandra-cluster"
+						"key": "env",
+						"value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"
 					}, {
-						"key": "CASSANDRA_SEEDS",
-						"value": "172.31.2.11,172.31.2.12,172.31.2.13"
+						"key": "env",
+						"value": "CASSANDRA_SEEDS=172.31.2.11,172.31.2.12,172.31.2.13"
 					}, {
 						"key": "volume-driver",
 						"value": "rexray"
@@ -56,7 +57,7 @@
 			"mem": 8000,
 			"instances": 1,
 			"dependencies": [
-				"/cassandra-cluster/cassandra1"
+				"/cassandra-cluster/cluster1/cassandra1"
 			],
 			"constraints": [
 				[
@@ -68,14 +69,14 @@
 			"id": "cassandra3",
 			"container": {
 				"docker": {
-					"image": "cakesolutions/cassandra:cluster",
+					"image": "jonasrosland/docker-cassandra:cluster",
 					"privileged": true,
 					"parameters": [{
-						"key": "CASSANDRA_CLUSTERNAME",
-						"value": "cassandra-cluster"
+						"key": "env",
+						"value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"
 					}, {
-						"key": "CASSANDRA_SEEDS",
-						"value": "172.31.2.11,172.31.2.12,172.31.2.13"
+						"key": "env",
+						"value": "CASSANDRA_SEEDS=172.31.2.11,172.31.2.12,172.31.2.13"
 					}, {
 						"key": "volume-driver",
 						"value": "rexray"
@@ -89,7 +90,7 @@
 			"mem": 8000,
 			"instances": 1,
 			"dependencies": [
-				"/cassandra-cluster/cassandra2"
+				"/cassandra-cluster/cluster1/cassandra2"
 			],
 			"constraints": [
 				[
