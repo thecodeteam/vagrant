@@ -8,7 +8,7 @@
     "id": "cassandra1",
     "container": {
       "docker": {
-        "image": "cakesolutions/cassandra:cluster",
+        "image": "jonasrosland/docker-cassandra:cluster",
         "privileged": true,
         "parameters": [
             { "key": "env", "value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"},
@@ -32,7 +32,7 @@
     "id": "cassandra2",
     "container": {
       "docker": {
-        "image": "cakesolutions/cassandra:cluster",
+        "image": "jonasrosland/docker-cassandra:cluster",
         "privileged": true,
         "parameters": [
             { "key": "env", "value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"},
@@ -59,7 +59,7 @@
     "id": "cassandra3",
     "container": {
       "docker": {
-        "image": "cakesolutions/cassandra:cluster",
+        "image": "jonasrosland/docker-cassandra:cluster",
         "privileged": true,
         "parameters": [
             { "key": "env", "value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"},
