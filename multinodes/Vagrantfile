@@ -119,6 +119,7 @@ Vagrant.configure("2") do |config|
             PUBLIC_DNS=`wget -q -O - http://169.254.169.254/latest/meta-data/public-hostname`
             hostname $PUBLIC_DNS
             echo $PUBLIC_DNS > /etc/hostname
+            echo $PUBLIC_DNS > /etc/mesos-slave/hostname
             HOSTNAME=$PUBLIC_DNS  # Fix the bash built-in hostname variable too
             SCRIPT
         end
@@ -134,7 +135,8 @@ Vagrant.configure("2") do |config|
 
         if slave?(ninfo[:hostname]) then
           #override.vm.provision :shell , :inline => 'echo "MASTER=`cat /etc/mesos/zk`" > /etc/default/mesos-slave'
-          override.vm.provision :shell , :inline => 'restart mesos-slave'
+          #override.vm.provision :shell , :inline => 'stop mesos-slave'
+          override.vm.provision :shell , :inline => 'start mesos-slave'
         end
       end
 
