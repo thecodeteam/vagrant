@@ -1,87 +1,102 @@
 {
-  "id": "cassandra-cluster",
-  "groups": [
-    {
-    "id": "cluster1",
-  "apps": [
-  {
-    "id": "cassandra1",
-    "container": {
-      "docker": {
-        "image": "jonasrosland/docker-cassandra:cluster",
-        "privileged": true,
-        "parameters": [
-            { "key": "env", "value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"},
-            { "key": "env", "value": "CASSANDRA_SEEDS=172.31.2.11,172.31.2.12,172.31.2.13"},
-            { "key": "volume-driver", "value": "rexray" },
-            { "key": "volume", "value": "cassandra1:/var/lib/cassandra" }
-        ]
-      }
-    },
-    "cpus": 2,
-    "mem": 8000,
-    "instances": 1,
-    "constraints": [
-    [
-      "hostname",
-      "UNIQUE"
-    ]
-    ]
-  },
-  {
-    "id": "cassandra2",
-    "container": {
-      "docker": {
-        "image": "jonasrosland/docker-cassandra:cluster",
-        "privileged": true,
-        "parameters": [
-            { "key": "env", "value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"},
-            { "key": "env", "value": "CASSANDRA_SEEDS=172.31.2.11,172.31.2.12,172.31.2.13"},
-            { "key": "volume-driver", "value": "rexray" },
-            { "key": "volume", "value": "cassandra2:/var/lib/cassandra" }
-        ]
-      }
-    },
-    "cpus": 2,
-    "mem": 8000,
-    "instances": 1,
-    "dependencies": [
-        "/cassandra-cluster/cluster1/cassandra1"
-    ],
-    "constraints": [
-    [
-      "hostname",
-      "UNIQUE"
-    ]
-    ]
-  },
-  {
-    "id": "cassandra3",
-    "container": {
-      "docker": {
-        "image": "jonasrosland/docker-cassandra:cluster",
-        "privileged": true,
-        "parameters": [
-            { "key": "env", "value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"},
-            { "key": "env", "value": "CASSANDRA_SEEDS=172.31.2.11,172.31.2.12,172.31.2.13"},
-            { "key": "volume-driver", "value": "rexray" },
-            { "key": "volume", "value": "cassandra3:/var/lib/cassandra" }
-        ]
-      }
-    },
-    "cpus": 2,
-    "mem": 8000,
-    "instances": 1,
-    "dependencies": [
-        "/cassandra-cluster/cluster1/cassandra2"
-    ],
-    "constraints": [
-    [
-      "hostname",
-      "UNIQUE"
-    ]
-    ]
-  }
-  ]
-}]
+	"id": "cassandra-cluster",
+	"groups": [{
+		"apps": [{
+			"id": "cassandra1",
+			"container": {
+				"docker": {
+					"image": "cakesolutions/cassandra:cluster",
+					"privileged": true,
+					"parameters": [{
+						"key": "CASSANDRA_CLUSTERNAME",
+						"value": "cassandra-cluster"
+					}, {
+						"key": "CASSANDRA_SEEDS",
+						"value": "172.31.2.11,172.31.2.12,172.31.2.13"
+					}, {
+						"key": "volume-driver",
+						"value": "rexray"
+					}, {
+						"key": "volume",
+						"value": "cassandra1:/var/lib/cassandra"
+					}]
+				}
+			},
+			"cpus": 2,
+			"mem": 8000,
+			"instances": 1,
+			"constraints": [
+				[
+					"hostname",
+					"UNIQUE"
+				]
+			]
+		}, {
+			"id": "cassandra2",
+			"container": {
+				"docker": {
+					"image": "cakesolutions/cassandra:cluster",
+					"privileged": true,
+					"parameters": [{
+						"key": "CASSANDRA_CLUSTERNAME",
+						"value": "cassandra-cluster"
+					}, {
+						"key": "CASSANDRA_SEEDS",
+						"value": "172.31.2.11,172.31.2.12,172.31.2.13"
+					}, {
+						"key": "volume-driver",
+						"value": "rexray"
+					}, {
+						"key": "volume",
+						"value": "cassandra2:/var/lib/cassandra"
+					}]
+				}
+			},
+			"cpus": 2,
+			"mem": 8000,
+			"instances": 1,
+			"dependencies": [
+				"/cassandra-cluster/cassandra1"
+			],
+			"constraints": [
+				[
+					"hostname",
+					"UNIQUE"
+				]
+			]
+		}, {
+			"id": "cassandra3",
+			"container": {
+				"docker": {
+					"image": "cakesolutions/cassandra:cluster",
+					"privileged": true,
+					"parameters": [{
+						"key": "CASSANDRA_CLUSTERNAME",
+						"value": "cassandra-cluster"
+					}, {
+						"key": "CASSANDRA_SEEDS",
+						"value": "172.31.2.11,172.31.2.12,172.31.2.13"
+					}, {
+						"key": "volume-driver",
+						"value": "rexray"
+					}, {
+						"key": "volume",
+						"value": "cassandra3:/var/lib/cassandra"
+					}]
+				}
+			},
+			"cpus": 2,
+			"mem": 8000,
+			"instances": 1,
+			"dependencies": [
+				"/cassandra-cluster/cassandra2"
+			],
+			"constraints": [
+				[
+					"hostname",
+					"UNIQUE"
+				]
+			]
+		}]
+	}]
 }
