@@ -8,6 +8,7 @@
 				"docker": {
 					"image": "jonasrosland/docker-cassandra:cluster",
 					"privileged": true,
+					"forcePullImage": true,
 					"parameters": [{
 						"key": "env",
 						"value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"
@@ -38,6 +39,7 @@
 				"docker": {
 					"image": "jonasrosland/docker-cassandra:cluster",
 					"privileged": true,
+					"forcePullImage": true,
 					"parameters": [{
 						"key": "env",
 						"value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"
@@ -71,6 +73,7 @@
 				"docker": {
 					"image": "jonasrosland/docker-cassandra:cluster",
 					"privileged": true,
+					"forcePullImage": true,
 					"parameters": [{
 						"key": "env",
 						"value": "CASSANDRA_CLUSTERNAME=cassandra-cluster"

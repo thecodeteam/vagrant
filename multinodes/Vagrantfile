@@ -127,6 +127,11 @@ Vagrant.configure("2") do |config|
         if master?(ninfo[:hostname]) then
           override.vm.provision :shell , :inline => 'restart mesos-master'
           override.vm.provision :shell , :inline => 'stop mesos-slave'
+          if conf["datastax_opscenter_enable"] then
+            override.vm.provision :shell do |s|
+              s.path = "scripts/datastax.sh"
+            end
+          end
         end
 
         if zk?(ninfo[:hostname]) then
