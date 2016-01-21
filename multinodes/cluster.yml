@@ -32,7 +32,7 @@ marathon_ipbase: "172.31.3."
 
 chronos_enable: false
 
-datastax_opscenter_enable: true
+datastax_opscenter_enable: false
 
 # EC2 Configurations
 # please choose one region from
