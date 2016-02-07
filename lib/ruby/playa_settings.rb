@@ -14,7 +14,7 @@ class PlayaSettings
     if @settings.include?(sym.to_s)
       return @settings[sym.to_s]
     else
-      super(sym, *args, &block)
+      #super(sym, *args, &block)
     end
   end
 

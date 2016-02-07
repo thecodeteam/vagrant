@@ -2,3 +2,4 @@
 .DS_Store
 packer_cache
 packer/builds
+Volumes/*

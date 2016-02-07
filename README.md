@@ -3,19 +3,113 @@
 [Playa Mesos][8] helps you quickly create [Apache Mesos][1] test environments.
 This project relies on [VirtualBox][5], [Vagrant][6], and an Ubuntu box image
 which has Mesos and [Marathon][2] pre-installed. The box image is downloadable for your
-convenience, but it can also be built from source using [Packer][9].
+convenience, but it can also be built from source using [Packer][9].  There is an external volume capability when using
+with VirtualBox provided through [REX-Ray](https://github.com/emccode/rexray).
 
 As an alternative to VirtualBox, it's possible to build and run the image on
 VMware [Fusion](https://www.vmware.com/products/fusion/) or [Workstation](https://www.vmware.com/products/workstation/).
 
 ## Requirements
 
-* [VirtualBox][5] 4.2+
+* [VirtualBox][5] 5.0.10+
 * [Vagrant][6] 1.3+
 * [git](http://git-scm.com/downloads) (command line tool)
 * [Packer][9] 0.5+ (optional)
 * VMware [Fusion](https://www.vmware.com/products/fusion/) or [Workstation](https://www.vmware.com/products/workstation/) (optional)
 * [Vagrant Plugin for VMware Fusion or Workstation](https://www.vagrantup.com/vmware) (optional)
+
+## Configuration
+The `config.json` file holds all of the configurable parameters.  By default
+there is one host deployed running the master and slave services.  Additionally
+both Chronos and Marathon frameworks are running.  Set the appropriate hostnames, IP
+addresses, VM settings, and other parameters in this file.
+
+### Example All-In-One Master
+```json
+{
+  "platform": "virtualbox",
+  "box_name": "playa_mesos_ubuntu_14.04_201601041324",
+  "base_url": "http://downloads.mesosphere.io/playa-mesos",
+  "hosts": {
+    "mesos-master": {
+      "ip": "10.141.141.10",
+      "vm_ram": "2048",
+      "vm_cpus": "2"
+    }
+	}
+}
+```
+
+### Example All-In-One Master with External Volumes
+The `external_volumes` parameter can be introduced which leverages VirtualBox
+to provide external volume support for tasks.  The external volume functionality
+means that both the `Mesos containerizer` and `Docker containerizer` can
+define external volumes that get attached to tasks.  See [Mesos](https://github.com/emccode/mesos-module-dvdi)
+and [Docker](https://github.com/emccode/rexray) for examples.
+
+
+
+```json
+{
+  "platform": "virtualbox",
+  "box_name": "playa_mesos_ubuntu_14.04_201601041324",
+  "base_url": "http://downloads.mesosphere.io/playa-mesos",
+  "hosts": {
+    "mesos-master": {
+      "ip": "10.141.141.10",
+      "vm_ram": "2048",
+      "vm_cpus": "2",
+      "external_volumes":true
+    }
+	}
+}
+```
+
+### Example Master with 3 Slaves and External Volumes
+Optionally a more realistic set of nodes can be deployed.  We include an
+example below for `mesos-master`, `mesos-slave1`, `mesos-slave2`, and
+`mesos-slave3`.  There is a `disable_slave` flag that can be set per node to
+determine the personality of the node which is used on `mesos-master`.  
+The root `vm_ram` and `vm_cpus` will be applied where configuration is not set
+on individual nodes.
+
+```json
+{
+  "platform": "virtualbox",
+  "box_name": "playa_mesos_ubuntu_14.04_201601041324",
+  "base_url": "http://downloads.mesosphere.io/playa-mesos",
+  "hosts": {
+    "mesos-master": {
+      "ip": "10.141.141.10",
+      "vm_ram": "512",
+      "vm_cpus": "1",
+      "disable_slave": true
+    },
+    "mesos-slave1":{
+      "ip":"10.141.141.11",
+      "external_volumes":true
+    },
+    "mesos-slave2":{
+      "ip":"10.141.141.12",
+      "external_volumes":true
+    },
+    "mesos-slave3":{
+      "ip":"10.141.141.13",
+      "external_volumes":true
+    }
+	},
+  "vm_ram": "1024",
+  "vm_cpus": "1"
+}
+```
+
+## Runtime Note
+At any time you can remove a host or add a new host with new
+settings.
+
+```bash
+vagrant destroy -f mesos-slave1 && vagrant up mesos-slave1
+```
 
 ## Quick Start
 
@@ -23,10 +117,17 @@ VMware [Fusion](https://www.vmware.com/products/fusion/) or [Workstation](https:
 
 1. [Install Vagrant](http://www.vagrantup.com/downloads.html)
 
+1. (Optional for external volumes) Disable authentication for VirtualBox and start the SOAP Web Service.
+
+  ```bash
+  VBoxManage setproperty websrvauthlibrary null
+  /Applications/VirtualBox.app/Contents/MacOS/vboxwebsrv -H 0.0.0.0 -v
+  ```
+
 1. Clone this repository
 
   ```bash
-  git clone https://github.com/mesosphere/playa-mesos.git
+  git clone https://github.com/mesosphere/playa-mesos
   cd playa-mesos
   ```
 
@@ -47,7 +148,7 @@ VMware [Fusion](https://www.vmware.com/products/fusion/) or [Workstation](https:
 1. SSH to the VM
 
   ```bash
-  vagrant ssh
+  vagrant ssh mesos-master
   ps -eaf | grep mesos
   exit
   ```
@@ -104,6 +205,42 @@ The build is controlled with the following files:
 For additional information on customizing the build, or creating a new profile,
 see [Configuration][15] and the [Packer Documentation][20].
 
+## External Volume Examples
+There are two personalities being advertised from the external volume driver.
+The first is for native Docker volumes through the `docker` Volume Driver name.
+This is where a Docker containerizer is being used.
+
+```bash
+docker run -ti --volume-driver=docker -v test:/test busybox
+df /test
+exit
+```
+
+The second is through the Mesos containerizer through the `mesos` Volume Driver
+name.  See the following Marathon example `job.json` file.  
+
+```json
+{
+  "id": "hello-play",
+  "cmd": "while [ true ] ; do touch /tmp/hello ; sleep 5 ; done",
+  "mem": 32,
+  "cpus": 0.1,
+  "instances": 1,
+  "env": {
+    "DVDI_VOLUME_NAME": "test2",
+    "DVDI_VOLUME_DRIVER": "mesos",
+    "DVDI_VOLUME_OPTS": "size=5"
+  }
+}
+```
+
+Start the job interactively through Marathon.
+
+```bash
+vagrant ssh mesos-master
+http post http://127.0.0.1:8080/v2/apps < job.json
+```
+
 ## Documentation
 
 * [Configuration][15]
@@ -116,7 +253,7 @@ see [Configuration][15] and the [Packer Documentation][20].
 
 * [vagrant-mesos](https://github.com/everpeace/vagrant-mesos): Vagrant
   provisioning with multinode and EC2 support
-* [babushka-mesos](https://github.com/parolkar/mesos-babushka): It is [Babushka](http://babushka.me/) based provisioning of Mesos Cluster which can help you demonstrate [potential](http://vimeo.com/110914075) of mesos. 
+* [babushka-mesos](https://github.com/parolkar/mesos-babushka): It is [Babushka](http://babushka.me/) based provisioning of Mesos Cluster which can help you demonstrate [potential](http://vimeo.com/110914075) of mesos.
 
 ## Authors
 
@@ -146,3 +283,5 @@ VMware Support: [Fabio Rapposelli](https://github.com/frapposelli) ([@fabiorappo
 [21]: config.json "config.json"
 [22]: packer/packer.json "packer.json"
 [23]: lib/scripts "scripts"
+[24]: https://github.com/emccode/rexray "REX-Ray"
+[25]: https://github.com/emccode/mesos-module-dvdi "mesos-module-dvdi"
