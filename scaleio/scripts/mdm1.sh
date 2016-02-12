@@ -74,12 +74,8 @@ echo VERSION_SUMMARY = $VERSION_SUMMARY
 
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
-yum install java-1.7.0-openjdk -y
+yum install java-1.8.0-openjdk -y
 cd /vagrant/scaleio/ScaleIO_"$VERSION_SUMMARY"_"$ZIP_OS"_Download
-
-# Always install ScaleIO IM
-#export GATEWAY_ADMIN_PASSWORD=${PASSWORD}
-#rpm -Uv ${PACKAGENAME}-gateway-${VERSION}.noarch.rpm
 
 if [ "${CLUSTERINSTALL}" == "True" ]; then
   rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
@@ -88,8 +84,18 @@ if [ "${CLUSTERINSTALL}" == "True" ]; then
   scli --mdm --add_primary_mdm --primary_mdm_ip ${FIRSTMDMIP} --accept_license
 fi
 
-#sed -i 's/mdm.ip.addresses=/mdm.ip.addresses='${FIRSTMDMIP}','${SECONDMDMIP}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
-#service scaleio-gateway restart
+# Always install ScaleIO Gateway
+export GATEWAY_ADMIN_PASSWORD=${PASSWORD}
+unzip -o "/vagrant/scaleio/ScaleIO_"$VERSION_SUMMARY"_Gateway_for_Linux_Download.zip" -d /vagrant/scaleio
+cd /vagrant/scaleio/ScaleIO_"$VERSION_SUMMARY"_Gateway_for_Linux_Download
+rpm -Uv ${PACKAGENAME}-gateway-${VERSION}.noarch.rpm
+
+sed -i 's/mdm.ip.addresses=/mdm.ip.addresses='${FIRSTMDMIP}','${SECONDMDMIP}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
+java -jar /opt/emc/scaleio/gateway/webapps/ROOT/resources/install-CLI.jar \
+  --reset_password $GATEWAY_ADMIN_PASSWORD \
+  --config_file /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
+service scaleio-gateway start
+service scaleio-gateway restart
 
 if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"
