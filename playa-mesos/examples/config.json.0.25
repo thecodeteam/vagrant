@@ -2,6 +2,8 @@
   "platform": "virtualbox",
   "box_name": "playa_mesos_ubuntu_14.04_201601041324",
   "base_url": "http://downloads.mesosphere.io/playa-mesos",
+  "mesos_release": "0.25.0-0.2.70.ubuntu1404",
+  "isolator_version": "0.4.0",
   "hosts": {
     "mesos-master": {
       "ip": "10.141.141.10",

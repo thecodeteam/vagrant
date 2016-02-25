@@ -1,0 +1,116 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# This configuration requires Vagrant 1.5 or newer and two plugins:
+#
+#   vagrant plugin install vagrant-hosts        ~> 2.1.4
+#   vagrant plugin install vagrant-auto_network ~> 1.0.0
+#
+# After installation, the following steps will spin up a master and agent that
+# can communicate with each other:
+#
+#     vagrant up
+#     vagrant ssh puppetagent
+#     sudo -i
+#     puppet agent -t
+Vagrant.require_version ">= 1.5.0"
+require 'vagrant-hosts'
+require 'vagrant-auto_network'
+
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
+
+# these are the internal IPs, alternate IPs are auto-assigned using vagrant-auto_network
+puppetmaster_nodes = { 
+  'puppetmaster' => { 
+    :ip => '192.168.50.9', :hostname => 'puppetmaster', :domain => 'scaleio.local', :memory => 1024, :cpus => 1 
+  }
+}
+
+# these are the internal IPs, alternate IPs are auto-assigned using vagrant-auto_network
+scaleio_nodes = { 
+  'tb' => { :ip => '192.168.50.11', :hostname => 'tb', :domain => 'scaleio.local', :memory => 1024, :cpus => 1 },
+  'mdm1' => { :ip => '192.168.50.12', :hostname => 'mdm1', :domain => 'scaleio.local', :memory => 1024, :cpus => 1 },
+#  'sds1' => { :ip => '192.168.50.14', :hostname => 'sds1', :domain => 'scaleio.local', :memory => 1024, :cpus => 1 },
+#  'sdc1' => { :ip => '192.168.50.15', :hostname => 'sdc1', :domain => 'scaleio.local', :memory => 1024, :cpus => 1 },
+  'mdm2' => { :ip => '192.168.50.13', :hostname => 'mdm2', :domain => 'scaleio.local', :memory => 1024, :cpus => 1 },
+}
+
+Vagrant.configure('2') do |config|
+
+  config.vm.define puppetmaster_nodes['puppetmaster'][:hostname] do |node|
+    node_hash = puppetmaster_nodes['puppetmaster']
+    node.vm.box = 'puppetlabs/centos-6.6-64-nocm'
+    node.vm.hostname = "#{node_hash[:hostname]}.#{node_hash[:domain]}"
+    node.vm.provider "virtualbox" do |vb|
+      vb.memory = node_hash[:memory] || 1024
+      vb.cpus = node_hash[:cpus] || 1
+    end
+
+    node.vm.network :private_network, :ip => node_hash[:ip]
+    node.vm.network :private_network, :auto_network => true
+
+    # Use vagrant-hosts to add entries to /etc/hosts for each virtual machine
+    # in this file.
+    node.vm.provision :hosts
+
+    bootstrap_script = <<-EOF
+    if which puppet > /dev/null 2>&1; then
+      echo 'Puppet Installed.'
+    else
+      echo 'Installing Puppet Master.'
+      rpm -ivh http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-10.noarch.rpm
+      yum --nogpgcheck -y install puppet-server
+      echo '*.#{node_hash[:domain]}' > /etc/puppet/autosign.conf
+      puppet module install puppetlabs-stdlib
+      puppet module install puppetlabs-firewall
+      puppet module install puppetlabs-java
+      /usr/bin/puppet resource service iptables ensure=stopped enable=false
+      /usr/bin/puppet resource service puppetmaster ensure=running enable=true
+    fi
+    EOF
+    node.vm.provision :shell, :inline => bootstrap_script
+    node.vm.synced_folder "puppet", "/etc/puppet"
+  end
+
+
+  scaleio_nodes.each do |node_name,value|
+    config.vm.provision :hosts do |provisioner|
+      provisioner.add_host puppetmaster_nodes['puppetmaster'][:ip], 
+      ["#{puppetmaster_nodes['puppetmaster'][:hostname]}.#{puppetmaster_nodes['puppetmaster'][:domain]}","#{puppetmaster_nodes['puppetmaster'][:hostname]}"]
+    end 
+
+    config.vm.define node_name do |node|
+      node_hash = scaleio_nodes[node_name]
+      node.vm.box = 'puppetlabs/centos-6.6-64-nocm'
+      node.vm.hostname = "#{node_hash[:hostname]}.#{node_hash[:domain]}"
+      node.vm.provider "virtualbox" do |vb|
+        vb.memory = node_hash[:memory] || 1024
+        vb.cpus = node_hash[:cpus] || 1
+      end
+
+      node.vm.network :private_network, :ip => node_hash[:ip]
+      node.vm.network :private_network, :auto_network => true
+
+      #node.vm.provision :hosts
+      
+
+      # Set up Puppet Agent to automatically connect with Puppet master
+      bootstrap_script = <<-EOF
+      if which puppet > /dev/null 2>&1; then
+        echo 'Puppet Installed.'
+      else
+        echo 'Installing Puppet Agent.'
+        rpm -ivh http://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-10.noarch.rpm
+        yum --nogpgcheck -y install puppet
+        puppet config set --section main server #{puppetmaster_nodes['puppetmaster'][:hostname]}.#{puppetmaster_nodes['puppetmaster'][:domain]}
+        puppet agent -t --detailed-exitcodes || [ $? -eq 2 ]
+      fi
+      EOF
+      node.vm.provision :shell, :inline => bootstrap_script
+    
+    end
+  end
+
+
+
+end

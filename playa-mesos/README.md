@@ -103,6 +103,20 @@ on individual nodes.
 }
 ```
 
+### Other Examples
+The `/examples` directory includes `config.json` files that can be used for
+other automated configurations. Simply replace the default `conig.json` file
+in order to use these.
+
+#### config.json.0.25
+In order to deploy `Mesos 0.25` you can use the specific config file, or you
+can set the `mesos_release` parameter to `0.25.0-0.2.70.ubuntu1404` in your
+existing configuration. Use `apt-cache policy mesos` or alternative methods to
+determine the appropriate version setting. Following this a
+`vagrant up --provision` will ensure the proper version is installed.
+
+####
+
 ## Runtime Note
 At any time you can remove a host or add a new host with new
 settings.
@@ -127,8 +141,8 @@ vagrant destroy -f mesos-slave1 && vagrant up mesos-slave1
 1. Clone this repository
 
   ```bash
-  git clone https://github.com/mesosphere/playa-mesos
-  cd playa-mesos
+  git clone https://github.com/emccode/vagrant
+  cd vagrant/playa-mesos
   ```
 
 1. Make sure tests pass

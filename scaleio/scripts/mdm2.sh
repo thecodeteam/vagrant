@@ -8,6 +8,10 @@ do
     OS="$2"
     shift
     ;;
+    -zo|--zipos)
+    ZIP_OS="$2"
+    shift
+    ;;
     -d|--device)
     DEVICE="$2"
     shift
@@ -61,10 +65,24 @@ echo SECONDMDMIP    = "${SECONDMDMIP}"
 echo TBIP    = "${TBIP}"
 echo PASSWORD    = "${PASSWORD}"
 echo CLUSTERINSTALL   =  "${CLUSTERINSTALL}"
+echo ZIP_OS    = "${ZIP_OS}"
+
+VERSION_MAJOR=`echo "${VERSION}" | awk -F \. {'print $1'}`
+VERSION_MAJOR_MINOR=`echo "${VERSION}" | awk -F \. {'print $1"."$2'}`
+VERSION_MINOR=`echo "${VERSION}" | awk -F \. {'print $2'}`
+VERSION_MINOR_FIRST=`echo $VERSION_MINOR | awk -F "-" {'print $1'}`
+VERSION_MINOR_SUB=`echo $VERSION_MINOR | awk -F "-" {'print $2'}`
+VERSION_MINOR_SUB_FIRST=`echo $VERSION_MINOR_SUB | head -c 1`
+VERSION_SUMMARY=`echo $VERSION_MAJOR"."$VERSION_MINOR_FIRST"."$VERSION_MINOR_SUB_FIRST`
+
+echo VERSION_MAJOR = $VERSION_MAJOR
+echo VERSION_SUMMARY = $VERSION_SUMMARY
+
+
 #echo "Number files in SEARCH PATH with EXTENSION:" $(ls -1 "${SEARCHPATH}"/*."${EXTENSION}" | wc -l)
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
-cd /vagrant/scaleio/ScaleIO_1.32.2_RHEL6_Download
+cd /vagrant/scaleio/ScaleIO_"$VERSION_SUMMARY"_"$ZIP_OS"_Download
 
 if [ "${CLUSTERINSTALL}" == "True" ]; then
   rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm

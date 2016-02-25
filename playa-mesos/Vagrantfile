@@ -77,6 +77,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       master_ip = hosts["mesos-master"]["ip"]
 
+      if pmconf.mesos_release != "" && pmconf.has_key?("mesos_release")
+        mesos_release = pmconf.mesos_release.split('-')[0]
+      else
+        mesos_release = "0.26.0"
+      end
+
+      if pmconf.isolator_version != "" && pmconf.has_key?("isolator_version") 
+        isolator_version = pmconf.isolator_version
+      else
+        isolator_version = "0.4.0"
+      end
+
+
       # Only provision if explicitly request with 'provision' or 'up --provision'
       if ARGV.any? { |arg| arg =~ /^(--)?provision$/ }
         node.vm.provision :shell do |shell|
@@ -131,6 +144,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         SHELL
       end
 
+
       if hosts[hostname]["external_volumes"] == true
         node.vm.provision "shell", inline: <<-SHELL
           sudo curl -sSL https://dl.bintray.com/emccode/rexray/install | sh -s staged
@@ -163,12 +177,12 @@ EOF
 
           sed -i '/.*volumePath.*/c\\\x20\x20volumePath: \"#{dir}\"' /etc/rexray/config.yml
 
-          wget -nv --directory-prefix=/usr/lib https://github.com/emccode/mesos-module-dvdi/releases/download/v0.4.0/libmesos_dvdi_isolator-0.26.0.so 1&>2
+          wget -nv --directory-prefix=/usr/lib https://github.com/emccode/mesos-module-dvdi/releases/download/v#{isolator_version}/libmesos_dvdi_isolator-#{mesos_release}.so 1&>2
           sudo tee -a /usr/lib/dvdi-mod.json << EOF
 {
   "libraries": [
     {
-      "file": "/usr/lib/libmesos_dvdi_isolator-0.26.0.so",
+      "file": "/usr/lib/libmesos_dvdi_isolator-#{mesos_release}.so",
       "modules": [
         {
           "name": "com_emccode_mesos_DockerVolumeDriverIsolator"

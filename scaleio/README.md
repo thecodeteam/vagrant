@@ -11,7 +11,8 @@ This Vagrant setup will automatically deploy three CentOS 6.5 nodes, download th
 
 To use this, you'll need to complete a few steps:
 
-1. `git clone https://github.com/virtualswede/vagrant-scaleio.git`
+1. `git clone https://github.com/emccode/vagrant.git`
+2. `cd vagrant/scaleio`
 2. Edit the proxies (if needed)
 3. Edit clusterinstall parameter to adjust for different installation methods (default is True which mean a fully working ScaleIO cluster gets installed)
 4. Run `vagrant up` (if you have more than one Vagrant Provider on your machine run `vagrant up --provider virtualbox` instead)
@@ -37,3 +38,6 @@ IPs,Password,Operating System,Is MDM/TB,Is SDS,SDS Device List,Is SDC
 # Troubleshooting
 
 If anything goes wrong during the deployment, run `vagrant destroy -f` to remove all the VMs and then `vagrant up` again to restart the deployment.
+
+# Maintainer
+- Jonas Rosland

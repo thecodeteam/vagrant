@@ -208,3 +208,6 @@ This operations terminates all VMs instances forming the cluster.
 $ cd multinodes
 $ vagrant destroy
 ```
+
+# Maintainer
+- Jonas Rosland
