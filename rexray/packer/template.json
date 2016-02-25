@@ -1,0 +1,73 @@
+{
+  "push": {
+    "name": "jonasrosland/rexray",
+    "include": [
+      "template.json",
+      "scripts/*",
+      "http/*"
+    ]
+  },
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant'|sudo -S sh '{{.Path}}'",
+      "override": {
+        "virtualbox-iso": {
+          "scripts": [
+            "scripts/base.sh",
+            "scripts/vagrant.sh",
+            "scripts/virtualbox.sh",
+            "scripts/docker.sh",
+            "scripts/rexray.sh",
+            "scripts/cleanup.sh"
+          ]
+        }
+      }
+    }
+  ],
+  "post-processors": [
+    [{
+      "type": "vagrant",
+      "keep_input_artifact": false
+    },
+    {
+      "type": "atlas",
+      "only": ["virtualbox-iso"],
+      "token": "{{user `atlas_token`}}",
+      "artifact": "jonasrosland/rexray",
+      "artifact_type": "vagrant.box",
+      "metadata": {
+        "created_at": "{{timestamp}}",
+        "provider": "virtualbox"
+      }
+    }]
+  ],
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>"
+      ],
+      "headless": true,
+      "boot_wait": "10s",
+      "disk_size": 40520,
+      "guest_os_type": "RedHat_64",
+      "http_directory": "http",
+      "iso_checksum": "f90e4d28fa377669b2db16cbcb451fcb9a89d2460e3645993e30e137ac37d284",
+      "iso_checksum_type": "sha256",
+      "iso_url": "http://centos.mbni.med.umich.edu/mirror/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_pty" : true,
+      "ssh_wait_timeout": "10000s",
+      "shutdown_command": "echo '/sbin/halt -h -p' > /tmp/shutdown.sh; echo 'vagrant'|sudo -S sh '/tmp/shutdown.sh'",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "virtualbox_version_file": ".vbox_version",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "1024" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "2" ]
+      ]
+    }
+  ]
+}
