@@ -57,32 +57,50 @@ echo CLUSTERINSTALL = "${CLUSTERINSTALL}"
 echo ZIP_OS    = "${ZIP_OS}"
 
 VERSION_MAJOR=`echo "${VERSION}" | awk -F \. {'print $1'}`
-VERSION_MAJOR_MINOR=`echo "${VERSION}" | awk -F \. {'print $1"."$2'}`
 VERSION_MINOR=`echo "${VERSION}" | awk -F \. {'print $2'}`
 VERSION_MINOR_FIRST=`echo $VERSION_MINOR | awk -F "-" {'print $1'}`
+VERSION_MAJOR_MINOR=`echo $VERSION_MAJOR"."$VERSION_MINOR_FIRST`
 VERSION_MINOR_SUB=`echo $VERSION_MINOR | awk -F "-" {'print $2'}`
 VERSION_MINOR_SUB_FIRST=`echo $VERSION_MINOR_SUB | head -c 1`
 VERSION_SUMMARY=`echo $VERSION_MAJOR"."$VERSION_MINOR_FIRST"."$VERSION_MINOR_SUB_FIRST`
 
 echo VERSION_MAJOR = $VERSION_MAJOR
+echo VERSION_MAJOR_MINOR = $VERSION_MAJOR_MINOR
 echo VERSION_SUMMARY = $VERSION_SUMMARY
 
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio wget -y
 cd /vagrant
-if [ ! -f "ScaleIO_Linux_"$VERSION_MAJOR".latest.zip" ];
+if [ ! -f "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" ];
 then
   echo "Downloading SIO package from downloads.emc.com"
-  wget -nv http://downloads.emc.com/emc-com/usa/ScaleIO/ScaleIO_Linux_"$VERSION_MAJOR".latest.zip -O ScaleIO_Linux_"$VERSION_MAJOR".latest.zip
+  wget -nv http://downloads.emc.com/emc-com/usa/ScaleIO/ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip -O ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip
 fi
-unzip -o "ScaleIO_Linux_"$VERSION_MAJOR".latest.zip" -d /vagrant/scaleio/
-unzip -o "/vagrant/scaleio/ScaleIO_"$VERSION_SUMMARY"_"$ZIP_OS"_Download.zip" -d /vagrant/scaleio/
-cd /vagrant/scaleio/ScaleIO_"$VERSION_SUMMARY"_"$ZIP_OS"_Download
+
+echo "Uncompressing SIO package"
+unzip -n "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" -d /vagrant/scaleio/
+
+FILE=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS`
+
+echo "Uncompressing SIO package file $FILE"
+unzip -n /vagrant/scaleio/$FILE -d /vagrant/scaleio/
+
+DIR=`unzip -l /vagrant/scaleio/$FILE | awk '{print $4}' | head -4 | tail -1`
+
+echo "Entering directory /vagrant/scaleio/$DIR"
+cd /vagrant/scaleio/$DIR
+
+MDMRPM=`ls -1 | grep "\-mdm\-"`
+SDSRPM=`ls -1 | grep "\-sds\-"`
+SDCRPM=`ls -1 | grep "\-sdc\-"`
 
 if [ "${CLUSTERINSTALL}" == "True" ]; then
-  rpm -Uv ${PACKAGENAME}-tb-${VERSION}.${OS}.x86_64.rpm
-  rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
-  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
+  echo "Installing MDM $MDMRPM"
+  MDM_ROLE_IS_MANAGER=0 rpm -Uv $MDMRPM 2>/dev/null
+  echo "Installing SDS $SDSRPM"
+  rpm -Uv $SDSRPM 2>/dev/null
+  echo "Installing SDC $SDCRPM"
+  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv $SDCRPM 2>/dev/null
 fi
 
 if [[ -n $1 ]]; then
