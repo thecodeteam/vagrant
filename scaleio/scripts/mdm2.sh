@@ -68,44 +68,61 @@ echo CLUSTERINSTALL   =  "${CLUSTERINSTALL}"
 echo ZIP_OS    = "${ZIP_OS}"
 
 VERSION_MAJOR=`echo "${VERSION}" | awk -F \. {'print $1'}`
-VERSION_MAJOR_MINOR=`echo "${VERSION}" | awk -F \. {'print $1"."$2'}`
 VERSION_MINOR=`echo "${VERSION}" | awk -F \. {'print $2'}`
 VERSION_MINOR_FIRST=`echo $VERSION_MINOR | awk -F "-" {'print $1'}`
+VERSION_MAJOR_MINOR=`echo $VERSION_MAJOR"."$VERSION_MINOR_FIRST`
 VERSION_MINOR_SUB=`echo $VERSION_MINOR | awk -F "-" {'print $2'}`
 VERSION_MINOR_SUB_FIRST=`echo $VERSION_MINOR_SUB | head -c 1`
 VERSION_SUMMARY=`echo $VERSION_MAJOR"."$VERSION_MINOR_FIRST"."$VERSION_MINOR_SUB_FIRST`
 
 echo VERSION_MAJOR = $VERSION_MAJOR
+echo VERSION_MAJOR_MINOR = $VERSION_MAJOR_MINOR
 echo VERSION_SUMMARY = $VERSION_SUMMARY
 
 
 #echo "Number files in SEARCH PATH with EXTENSION:" $(ls -1 "${SEARCHPATH}"/*."${EXTENSION}" | wc -l)
 truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
-cd /vagrant/scaleio/ScaleIO_"$VERSION_SUMMARY"_"$ZIP_OS"_Download
+
+cd /vagrant
+FILE=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS`
+echo "Found OS specific file $FILE"
+DIR=`unzip -l /vagrant/scaleio/$FILE | awk '{print $4}' | head -4 | tail -1`
+
+echo "Entering directory /vagrant/scaleio/$DIR"
+cd /vagrant/scaleio/$DIR
+
+MDMRPM=`ls -1 | grep "\-mdm\-"`
+SDSRPM=`ls -1 | grep "\-sds\-"`
+SDCRPM=`ls -1 | grep "\-sdc\-"`
 
 if [ "${CLUSTERINSTALL}" == "True" ]; then
-  rpm -Uv ${PACKAGENAME}-mdm-${VERSION}.${OS}.x86_64.rpm
-  rpm -Uv ${PACKAGENAME}-sds-${VERSION}.${OS}.x86_64.rpm
-  MDM_IP=${FIRSTMDMIP},${SECONDMDIP} rpm -Uv ${PACKAGENAME}-sdc-${VERSION}.${OS}.x86_64.rpm
+  echo "Installing MDM $MDMRPM"
+  MDM_ROLE_IS_MANAGER=1 rpm -Uv $MDMRPM 2>/dev/null
+  echo "Installing SDS $SDSRPM"
+  rpm -Uv $SDSRPM 2>/dev/null
+  echo "Installing SDC $SDCRPM"
+  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv $SDCRPM 2>/dev/null
 
-  scli --login --mdm_ip ${FIRSTMDMIP} --username admin --password admin
-  scli --mdm_ip ${FIRSTMDMIP} --set_password --old_password admin --new_password ${PASSWORD}
-  scli --mdm_ip ${FIRSTMDMIP} --login --username admin --password ${PASSWORD}
-  scli --add_secondary_mdm --mdm_ip ${FIRSTMDMIP} --secondary_mdm_ip ${SECONDMDMIP}
-  scli --add_tb --mdm_ip ${FIRSTMDMIP} --tb_ip ${TBIP}
-  scli --switch_to_cluster_mode --mdm_ip ${FIRSTMDMIP}
-  scli --add_protection_domain --mdm_ip ${FIRSTMDMIP} --protection_domain_name pdomain
-  scli --add_storage_pool --mdm_ip ${FIRSTMDMIP} --protection_domain_name pdomain --storage_pool_name pool1
-  scli --add_sds --mdm_ip ${FIRSTMDMIP} --sds_ip ${FIRSTMDMIP} --device_path ${DEVICE} --sds_name sds1 --protection_domain_name pdomain --storage_pool_name pool1
-  scli --add_sds --mdm_ip ${FIRSTMDMIP} --sds_ip ${SECONDMDMIP} --device_path ${DEVICE} --sds_name sds2 --protection_domain_name pdomain --storage_pool_name pool1
-  scli --add_sds --mdm_ip ${FIRSTMDMIP} --sds_ip ${TBIP} --device_path ${DEVICE} --sds_name sds3 --protection_domain_name pdomain --storage_pool_name pool1
-  echo "Waiting for 30 seconds to make sure the SDSs are created"
-  sleep 30
-  scli --add_volume --mdm_ip ${FIRSTMDMIP} --size_gb 8 --volume_name vol1 --protection_domain_name pdomain --storage_pool_name pool1
-  scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${FIRSTMDMIP} --allow_multi_map
-  scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${SECONDMDMIP} --allow_multi_map
-  scli --map_volume_to_sdc --mdm_ip ${FIRSTMDMIP} --volume_name vol1 --sdc_ip ${TBIP} --allow_multi_map
+  scli --mdm_ip ${FIRSTMDMIP} --create_mdm_cluster --master_mdm_ip ${FIRSTMDMIP} --master_mdm_management_ip ${FIRSTMDMIP} --master_mdm_name mdm1 --accept_license --approve_certificate
+  scli --mdm_ip ${FIRSTMDMIP} --login --username admin --password admin --approve_certificate
+  while [ $? -ne 0 ] ; do echo "Trying to login again.."; scli --mdm_ip ${FIRSTMDMIP} --login --username admin --password admin --approve_certificate ; done
+  scli --mdm_ip ${FIRSTMDMIP} --set_password --old_password admin --new_password ${PASSWORD} --approve_certificate
+  scli --mdm_ip ${FIRSTMDMIP} --login --username admin --password ${PASSWORD} --approve_certificate
+  scli --mdm_ip ${FIRSTMDMIP} --add_standby_mdm --new_mdm_ip ${SECONDMDMIP} --mdm_role manager --new_mdm_management_ip ${SECONDMDMIP} --new_mdm_name mdm2
+  scli --mdm_ip ${FIRSTMDMIP} --add_standby_mdm --new_mdm_ip ${TBIP} --mdm_role tb --new_mdm_name tb
+  scli --mdm_ip ${FIRSTMDMIP} --switch_cluster_mode --cluster_mode 3_node --add_slave_mdm_name mdm2 --add_tb_name tb
+  scli --mdm_ip ${FIRSTMDMIP} --rename_system --new_name cluster1
+  scli --mdm_ip ${FIRSTMDMIP} --add_protection_domain --protection_domain_name pdomain
+  scli --mdm_ip ${FIRSTMDMIP} --add_storage_pool --protection_domain_name pdomain --storage_pool_name pool1
+  scli --mdm_ip ${FIRSTMDMIP} --add_sds --sds_ip ${FIRSTMDMIP} --device_path ${DEVICE} --sds_name sds1 --protection_domain_name pdomain --storage_pool_name pool1
+  scli --mdm_ip ${FIRSTMDMIP} --add_sds --sds_ip ${SECONDMDMIP} --device_path ${DEVICE} --sds_name sds2 --protection_domain_name pdomain --storage_pool_name pool1
+  scli --mdm_ip ${FIRSTMDMIP} --add_sds --sds_ip ${TBIP} --device_path ${DEVICE} --sds_name sds3 --protection_domain_name pdomain --storage_pool_name pool1
+  scli --mdm_ip ${FIRSTMDMIP} --add_volume --size_gb 8 --volume_name vol1 --protection_domain_name pdomain --storage_pool_name pool1
+  while [ $? -ne 0 ] ; do echo "Trying to add volume again.."; sleep 1; scli --mdm_ip ${FIRSTMDMIP} --add_volume --size_gb 8 --volume_name vol1 --protection_domain_name pdomain --storage_pool_name pool1 ; done
+  scli --mdm_ip ${FIRSTMDMIP} --map_volume_to_sdc --volume_name vol1 --sdc_ip ${FIRSTMDMIP} --allow_multi_map
+  scli --mdm_ip ${FIRSTMDMIP} --map_volume_to_sdc --volume_name vol1 --sdc_ip ${SECONDMDMIP} --allow_multi_map
+  scli --mdm_ip ${FIRSTMDMIP} --map_volume_to_sdc --volume_name vol1 --sdc_ip ${TBIP} --allow_multi_map
 fi
 
 
