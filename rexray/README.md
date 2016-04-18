@@ -33,8 +33,8 @@ path according to your local environment.
 
 ### Clone the repo
 ```
-git clone https://github.com/jonasrosland/vagrant-rexray
-cd vagrant-rexray
+git clone https://github.com/emccode/vagrant
+cd vagrant/rexray
 vagrant up
 ```
 
