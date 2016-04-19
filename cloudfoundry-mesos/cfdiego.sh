@@ -73,6 +73,9 @@ git checkout v0.1434.0
 scripts/update
 scripts/generate-bosh-lite-manifests ./cfmesos.yml
 sed -i '' '1796s/true/false/' bosh-lite-manifests/diego.yml
+pushd src/github.com/cloudfoundry-incubator/auctioneer/cmd/auctioneer/
+sed -i '' 's|"github.com/codenrhoden/cloudfoundry-mesos/scheduler/auctionrunner"|"github.com/cloudfoundry-incubator/auction/auctionrunner"|g' main.go
+popd
 bosh deployment bosh-lite-manifests/diego.yml
 bosh create release --name diego --force
 bosh -n upload release
