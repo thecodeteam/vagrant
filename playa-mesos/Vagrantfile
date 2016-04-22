@@ -201,6 +201,14 @@ EOF
         SHELL
       end
 
+      if hosts[hostname]["enable_consul"] == true
+        node.vm.provision "shell", inline: <<-SHELL
+          wget -nv https://gist.githubusercontent.com/jonasrosland/c8a860100161051ec54dbc8e1f0f4220/raw -O /tmp/consul.sh 1&>2
+          chmod +x /tmp/consul.sh
+          /tmp/consul.sh
+        SHELL
+      end
+
       if !hosts[hostname].has_key?("disable_slave") || hosts[hostname]["disable_slave"] == false
         node.vm.provision "shell", inline: <<-SHELL
           service mesos-slave restart
