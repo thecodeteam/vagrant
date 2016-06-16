@@ -80,12 +80,7 @@ fi
 echo "Uncompressing SIO package"
 unzip -n "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" -d /vagrant/scaleio/
 
-FILE=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS`
-
-echo "Uncompressing SIO package file $FILE"
-unzip -n /vagrant/scaleio/$FILE -d /vagrant/scaleio/
-
-DIR=`unzip -l /vagrant/scaleio/$FILE | awk '{print $4}' | head -4 | tail -1`
+DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS | awk -F'/' '{print $1 "/" $2}' | head -1`
 
 echo "Entering directory /vagrant/scaleio/$DIR"
 cd /vagrant/scaleio/$DIR
