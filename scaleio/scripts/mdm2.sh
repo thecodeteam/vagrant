@@ -85,9 +85,7 @@ truncate -s 100GB ${DEVICE}
 yum install numactl libaio -y
 
 cd /vagrant
-FILE=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS`
-echo "Found OS specific file $FILE"
-DIR=`unzip -l /vagrant/scaleio/$FILE | awk '{print $4}' | head -4 | tail -1`
+DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS | awk -F'/' '{print $1 "/" $2}' | head -1`
 
 echo "Entering directory /vagrant/scaleio/$DIR"
 cd /vagrant/scaleio/$DIR

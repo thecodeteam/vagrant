@@ -79,9 +79,7 @@ yum install java-1.8.0-openjdk -y
 
 
 cd /vagrant
-FILE=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS`
-echo "Found OS specific file $FILE"
-DIR=`unzip -l /vagrant/scaleio/$FILE | awk '{print $4}' | head -4 | tail -1`
+DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS | awk -F'/' '{print $1 "/" $2}' | head -1`
 
 echo "Entering directory /vagrant/scaleio/$DIR"
 cd /vagrant/scaleio/$DIR
@@ -101,11 +99,7 @@ fi
 
 # Always install ScaleIO Gateway
 cd /vagrant
-FILE=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep Gateway_for_Linux`
-
-echo "Uncompressing SIO package file $FILE"
-unzip -n /vagrant/scaleio/$FILE -d /vagrant/scaleio
-DIR=`unzip -l /vagrant/scaleio/$FILE | awk '{print $4}' | head -4 | tail -1`
+DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep Gateway_for_Linux | awk -F'/' '{print $1 "/" $2}' | head -1`
 cd /vagrant/scaleio/$DIR
 
 GWRPM=`ls -1 | grep x86_64`
