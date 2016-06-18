@@ -147,7 +147,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       if hosts[hostname]["external_volumes"] == true
         node.vm.provision "shell", inline: <<-SHELL
-          sudo curl -sSL https://dl.bintray.com/emccode/rexray/install | sh -s staged
+          sudo curl -sSL https://dl.bintray.com/emccode/rexray/install | sh -s stable
 
           sudo tee -a /etc/rexray/config.yml << EOF
 rexray:
