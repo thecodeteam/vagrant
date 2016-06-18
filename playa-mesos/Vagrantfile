@@ -77,16 +77,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       master_ip = hosts["mesos-master"]["ip"]
 
-      if pmconf.mesos_release != "" && pmconf.has_key?("mesos_release")
+      if pmconf.instance_variable_get(:@settings).include?('mesos_release')
         mesos_release = pmconf.mesos_release.split('-')[0]
       else
-        mesos_release = "0.26.0"
+        mesos_release = "0.27.2"
       end
 
-      if pmconf.isolator_version != "" && pmconf.has_key?("isolator_version") 
+      if pmconf.instance_variable_get(:@settings).include?('isolator_version')
         isolator_version = pmconf.isolator_version
       else
-        isolator_version = "0.4.0"
+        isolator_version = "0.4.2"
       end
 
 
@@ -147,7 +147,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       if hosts[hostname]["external_volumes"] == true
         node.vm.provision "shell", inline: <<-SHELL
-          sudo curl -sSL https://dl.bintray.com/emccode/rexray/install | sh -s staged
+          sudo curl -sSL https://dl.bintray.com/emccode/rexray/install | sh -s stable
 
           sudo tee -a /etc/rexray/config.yml << EOF
 rexray:
@@ -195,17 +195,9 @@ EOF
 
           echo file:///usr/lib/dvdi-mod.json > /etc/mesos-slave/modules
           echo posix/cpu,posix/mem,com_emccode_mesos_DockerVolumeDriverIsolator > /etc/mesos-slave/isolation
-          curl -sSL https://dl.bintray.com/emccode/dvdcli/install | sh -
+          curl -sSL https://dl.bintray.com/emccode/dvdcli/install | sh - stable
 
           sudo rexray start
-        SHELL
-      end
-
-      if hosts[hostname]["enable_consul"] == true
-        node.vm.provision "shell", inline: <<-SHELL
-          wget -nv https://gist.githubusercontent.com/jonasrosland/c8a860100161051ec54dbc8e1f0f4220/raw -O /tmp/consul.sh 1&>2
-          chmod +x /tmp/consul.sh
-          /tmp/consul.sh
         SHELL
       end
 
