@@ -80,13 +80,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       if pmconf.instance_variable_get(:@settings).include?('mesos_release')
         mesos_release = pmconf.mesos_release.split('-')[0]
       else
-        mesos_release = "0.27.2"
+        mesos_release = "0.26.0"
       end
 
       if pmconf.instance_variable_get(:@settings).include?('isolator_version')
         isolator_version = pmconf.isolator_version
       else
-        isolator_version = "0.4.2"
+        isolator_version = "0.4.0"
       end
 
 
@@ -195,7 +195,7 @@ EOF
 
           echo file:///usr/lib/dvdi-mod.json > /etc/mesos-slave/modules
           echo posix/cpu,posix/mem,com_emccode_mesos_DockerVolumeDriverIsolator > /etc/mesos-slave/isolation
-          curl -sSL https://dl.bintray.com/emccode/dvdcli/install | sh - stable
+          curl -sSL https://dl.bintray.com/emccode/dvdcli/install | sh -s stable
 
           sudo rexray start
         SHELL
