@@ -48,7 +48,10 @@ do
     CLUSTERINSTALL="$2"
     shift
     ;;
-
+    -r|--rexrayinstall)
+    REXRAYINSTALL="$2"
+    shift
+    ;;
     *)
     # unknown option
     ;;
@@ -65,6 +68,7 @@ echo SECONDMDMIP    = "${SECONDMDMIP}"
 echo TBIP    = "${TBIP}"
 echo PASSWORD    = "${PASSWORD}"
 echo CLUSTERINSTALL   =  "${CLUSTERINSTALL}"
+echo REXRAYINSTALL     = "${REXRAYINSTALL}"
 echo ZIP_OS    = "${ZIP_OS}"
 
 VERSION_MAJOR=`echo "${VERSION}" | awk -F \. {'print $1'}`
@@ -123,6 +127,13 @@ if [ "${CLUSTERINSTALL}" == "True" ]; then
   scli --mdm_ip ${FIRSTMDMIP} --map_volume_to_sdc --volume_name vol1 --sdc_ip ${TBIP} --allow_multi_map
 fi
 
+if [ "${REXRAYINSTALL}" == "True" ]; then
+  echo "Installing Docker"
+  curl -sSL https://get.docker.com/ | sh
+  echo "Installing REX-Ray"
+  /vagrant/scripts/rexray.sh
+  service docker restart
+fi
 
 if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"
