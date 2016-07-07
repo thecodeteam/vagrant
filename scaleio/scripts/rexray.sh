@@ -1,4 +1,3 @@
-curl -sSL https://get.docker.com/ | sh
 curl -sSL https://dl.bintray.com/emccode/rexray/install | sh -s -- stable
 cat << EOF > /etc/rexray/config.yml
 rexray:

@@ -44,6 +44,10 @@ do
     CLUSTERINSTALL="$2"
     shift
     ;;
+    -r|--rexrayinstall)
+    REXRAYINSTALL="$2"
+    shift
+    ;;
     *)
     # unknown option
     ;;
@@ -58,6 +62,7 @@ echo PACKAGENAME    = "${PACKAGENAME}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
 echo CLUSTERINSTALL     = "${CLUSTERINSTALL}"
+echo REXRAYINSTALL     = "${REXRAYINSTALL}"
 echo ZIP_OS    = "${ZIP_OS}"
 
 VERSION_MAJOR=`echo "${VERSION}" | awk -F \. {'print $1'}`
@@ -96,6 +101,14 @@ if [ "${CLUSTERINSTALL}" == "True" ]; then
   MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv $SDCRPM 2>/dev/null
 fi
 
+if [ "${REXRAYINSTALL}" == "True" ]; then
+  echo "Installing Docker"
+  curl -sSL https://get.docker.com/ | sh
+  echo "Installing REX-Ray"
+  /vagrant/scripts/rexray.sh
+  service docker restart
+fi
+
 # Always install ScaleIO Gateway
 cd /vagrant
 DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep Gateway_for_Linux | awk -F'/' '{print $1 "/" $2}' | head -1`
@@ -108,6 +121,15 @@ sed -i 's/security.bypass_certificate_check=false/security.bypass_certificate_ch
 sed -i 's/mdm.ip.addresses=/mdm.ip.addresses='${FIRSTMDMIP}','${SECONDMDMIP}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
 service scaleio-gateway start
 service scaleio-gateway restart
+
+# Copy the ScaleIO GUI application to the /vagrant directory for easy access
+cd /vagrant
+DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep GUI_for_Linux | awk -F'/' '{print $1 "/" $2}' | head -1`
+cd /vagrant/scaleio/$DIR
+GUIRPM=`ls -1 | grep rpm`
+rpm2cpio $GUIRPM | cpio -idmv
+cp -R opt/emc/scaleio/gui /vagrant
+rm -fr opt/
 
 if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"
