@@ -1,7 +1,5 @@
 curl -sSL https://dl.bintray.com/emccode/rexray/install | sh -s -- stable
 cat << EOF > /etc/rexray/config.yml
-rexray:
-  logLevel: warn
 libstorage:
   service: scaleio
   integration:
@@ -9,12 +7,9 @@ libstorage:
       operations:
         mount:
           preempt: true
-        unmount:
-          ignoreusedcount: true
 scaleio:
   endpoint: https://192.168.50.12/api
   insecure: true
-  apiVersion: "2.0"
   useCerts: true
   userName: admin
   password: 'Scaleio123'
