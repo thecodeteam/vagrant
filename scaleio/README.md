@@ -9,6 +9,8 @@ Added to this we can also automate the installation of [Docker](https://docker.c
 
 ## Requirements:
 
+There are known issues currently (Aug 2, 2016) with vagrant versions > 1.8.4 and VirtualBox 5.x.  We recommend using Vagrant 1.8.4 and VirtualBox 5.0.26 for known good results.
+
 The setup requires the `vagrant-triggers` plugin to be installed, you can do so by running:
 
 `vagrant plugin install vagrant-triggers`
