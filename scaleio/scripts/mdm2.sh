@@ -130,6 +130,10 @@ fi
 if [ "${REXRAYINSTALL}" == "True" ]; then
   echo "Installing Docker"
   curl -sSL https://get.docker.com/ | sh
+  echo "Setting Docker Permissions"
+  usermod -aG docker vagrant
+  echo "Setting Docker service to Start on boot"
+  chkconfig docker on
   echo "Installing REX-Ray"
   /vagrant/scripts/rexray.sh
   service docker restart
