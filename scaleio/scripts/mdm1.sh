@@ -83,7 +83,7 @@ yum install unzip numactl libaio -y
 yum install java-1.8.0-openjdk -y
 
 cd /vagrant
-DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS | awk -F'/' '{print $1 "/" $2}' | head -1`
+DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS | awk -F'/' '{print $1 "/" $2 "/" $3}' | head -1`
 
 echo "Entering directory /vagrant/scaleio/$DIR"
 cd /vagrant/scaleio/$DIR
@@ -115,9 +115,9 @@ fi
 
 # Always install ScaleIO Gateway
 cd /vagrant
-DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep Gateway_for_Linux | awk -F'/' '{print $1 "/" $2}' | head -1`
+DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep Gateway_for_Linux | awk -F'/' '{print $1 "/" $2 "/" $3}' | head -1`
 cd /vagrant/scaleio/$DIR
-
+echo "Installing GATEWAY $GWRPM"
 GWRPM=`ls -1 | grep x86_64`
 GATEWAY_ADMIN_PASSWORD=${PASSWORD} rpm -Uv $GWRPM --nodeps 2>/dev/null
 
@@ -128,7 +128,7 @@ service scaleio-gateway restart
 
 # Copy the ScaleIO GUI application to the /vagrant directory for easy access
 cd /vagrant
-DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep GUI_for_Linux | awk -F'/' '{print $1 "/" $2}' | head -1`
+DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep GUI_for_Linux | awk -F'/' '{print $1 "/" $2 "/" $3}' | head -1`
 cd /vagrant/scaleio/$DIR
 GUIRPM=`ls -1 | grep rpm`
 rpm2cpio $GUIRPM | cpio -idmv
