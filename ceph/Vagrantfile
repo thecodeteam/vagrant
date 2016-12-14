@@ -53,6 +53,7 @@ Vagrant.configure("2") do |config|
 
   # some shared setup
   config.vm.box = "codedellemc/ceph_rexray"
+  config.vm.box_url = "https://rawgit.com/codedellemc/vagrant/master/ceph/packer/vagrant_ceph_rexray.json"
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.ssh.forward_agent = true
   config.ssh.insert_key = false
