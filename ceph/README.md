@@ -30,6 +30,18 @@ able to immediately run commands like `rexray volume create` and
 `rexray volume ls`, or do the same thing with docker via `docker volume create`
 and `docker volume ls`
 
+**NOTE**: The VMs contain the default Vagrant insecure SSH public key, such that
+`vagrant ssh` works by default. However, the `ceph-admin` VM needs to be able to
+SSH to the other VMs in order to configure Ceph via `ceph-deploy`. In order to
+do this, the Vagrant SSH private key must be in your local SSH agent. The most
+typical way to accomplish this on a nix-like machine is by running the command:
+
+```
+ssh-add ~/.vagrant.d/insecure_private_key
+```
+
+Configuration of the Ceph cluster will not work without this step.
+
 ## Options
 There are optional fields in the `Vagrantfile` that can be modified or
 commented and uncommented.
