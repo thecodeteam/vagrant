@@ -65,7 +65,7 @@ Vagrant.configure("2") do |config|
   (1..server_nodes).each do |i|
     config.vm.define "ceph-server-#{i}" do |config|
       config.vm.hostname = "ceph-server-#{i}"
-      config.vm.network :private_network, ip: "#{network}.#{i+10}"
+      config.vm.network "private_network", ip: "#{network}.#{i+10}"
       config.vm.provider "virtualbox" do |vb|
         vb.customize ["modifyvm", :id, "--macaddress1", "auto"]
 	vb.customize ["storagectl", :id, "--add", "sata", "--controller", "IntelAhci", "--name", "SATA", "--portcount", 30, "--hostiocache", "on"]
@@ -86,13 +86,19 @@ Vagrant.configure("2") do |config|
           file_to_disk
         ]
       end
+
+      # work around bug in Vagrant 1.9.1
+      config.vm.provision "shell", privileged: true, inline: <<-SHELL
+        service network restart
+      SHELL
     end
+
   end
 
   # We need one Ceph admin machine to manage the cluster
   config.vm.define "ceph-admin" do |admin|
     admin.vm.hostname = "ceph-admin"
-    admin.vm.network :private_network, ip: "#{network}.10"
+    admin.vm.network "private_network", ip: "#{network}.10"
     admin.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--macaddress1", "auto"]
       vb.customize ["storagectl", :id, "--add", "sata", "--controller", "IntelAhci", "--name", "SATA", "--portcount", 30, "--hostiocache", "on"]
@@ -117,6 +123,11 @@ Vagrant.configure("2") do |config|
         s.inline = $build_rexray
       end
     end
+
+    # work around bug in Vagrant 1.9.1
+    admin.vm.provision "shell", privileged: true, inline: <<-SHELL
+      service network restart
+    SHELL
 
     admin.vm.provision "shell", privileged: false, path: "cephconfig.sh", args: server_nodes
     admin.vm.provision "shell", privileged: true, path: "rexconfig.sh", args: server_nodes
