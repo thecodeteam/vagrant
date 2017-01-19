@@ -9,9 +9,9 @@ network = "172.21.13"
 
 # Flags to control which REX-Ray to install
 # Setting all options to false will use whatever rexray is already present
-install_latest_stable_rex = false
+install_latest_stable_rex = true
 install_latest_staged_rex = false
-install_rex_from_source = true
+install_rex_from_source = false
 
 
 # Script to build rexray from source
