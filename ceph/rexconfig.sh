@@ -11,4 +11,4 @@ libstorage:
       preempt: false
 EOF
 
-sudo systemctl restart rexray
+sudo rexray start

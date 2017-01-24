@@ -27,7 +27,7 @@ secondmdmip = "#{network}.13"
 clusterinstall = "True" #If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
 
 # Install Docker and REX-Ray automatically
-rexrayinstall = "True"
+rexrayinstall = "False"
 
 # version of installation package
 version = "2.0-0.0"
