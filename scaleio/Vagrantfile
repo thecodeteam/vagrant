@@ -27,7 +27,7 @@ secondmdmip = "#{network}.13"
 clusterinstall = "True" #If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
 
 # Install Docker and REX-Ray automatically
-rexrayinstall = "False"
+rexrayinstall = "True"
 
 # version of installation package
 version = "2.0-0.0"
@@ -36,7 +36,7 @@ version = "2.0-0.0"
 os="el7"
 
 #ZIP OS Version of package
-zip_os="RHEL7"
+zip_os="OEL7"
 
 # installation folder
 siinstall = "/opt/scaleio/siinstall"
