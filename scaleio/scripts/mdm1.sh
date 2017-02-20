@@ -77,6 +77,12 @@ echo VERSION_MAJOR = $VERSION_MAJOR
 echo VERSION_MAJOR_MINOR = $VERSION_MAJOR_MINOR
 echo VERSION_SUMMARY = $VERSION_SUMMARY
 
+echo "Checking Interface State: enp0s8"
+INTERFACE_STATE=$(cat /sys/class/net/enp0s8/operstate)
+if [ "${INTERFACE_STATE}" == "down" ]; then
+  echo "Bringing Up Interface: enp0s8"
+  ifup enp0s8
+fi
 
 truncate -s 100GB ${DEVICE}
 yum install unzip numactl libaio -y
