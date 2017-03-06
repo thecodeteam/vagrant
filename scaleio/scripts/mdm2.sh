@@ -56,6 +56,10 @@ do
     REXRAYINSTALL="$2"
     shift
     ;;
+    -ms|--mesosinstall)
+    MESOSINSTALL="$2"
+    shift
+    ;;
     *)
     # unknown option
     ;;
@@ -74,6 +78,7 @@ echo PASSWORD    = "${PASSWORD}"
 echo CLUSTERINSTALL   =  "${CLUSTERINSTALL}"
 echo DOCKERINSTALL     = "${DOCKERINSTALL}"
 echo REXRAYINSTALL     = "${REXRAYINSTALL}"
+echo MESOSINSTALL     = "${MESOSINSTALL}"
 echo ZIP_OS    = "${ZIP_OS}"
 
 VERSION_MAJOR=`echo "${VERSION}" | awk -F \. {'print $1'}`
@@ -151,6 +156,10 @@ if [ "${REXRAYINSTALL}" == "True" ]; then
   echo "Installing REX-Ray"
   /vagrant/scripts/rexray.sh
   service docker restart
+fi
+
+if [ "${MESOSINSTALL}" == "True" ]; then
+  /vagrant/scripts/mesos-node.sh
 fi
 
 if [[ -n $1 ]]; then

@@ -1,4 +1,0 @@
-source "https://supermarket.getchef.com"
-
-cookbook 'apt'
-cookbook "mesos", github: "everpeace/cookbook-mesos"
