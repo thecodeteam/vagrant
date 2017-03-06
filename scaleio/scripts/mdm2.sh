@@ -48,6 +48,10 @@ do
     CLUSTERINSTALL="$2"
     shift
     ;;
+    -dk|--dockerinstall)
+    DOCKERINSTALL="$2"
+    shift
+    ;;
     -r|--rexrayinstall)
     REXRAYINSTALL="$2"
     shift
@@ -68,6 +72,7 @@ echo SECONDMDMIP    = "${SECONDMDMIP}"
 echo TBIP    = "${TBIP}"
 echo PASSWORD    = "${PASSWORD}"
 echo CLUSTERINSTALL   =  "${CLUSTERINSTALL}"
+echo DOCKERINSTALL     = "${DOCKERINSTALL}"
 echo REXRAYINSTALL     = "${REXRAYINSTALL}"
 echo ZIP_OS    = "${ZIP_OS}"
 
@@ -133,13 +138,16 @@ if [ "${CLUSTERINSTALL}" == "True" ]; then
   scli --mdm_ip ${FIRSTMDMIP} --map_volume_to_sdc --volume_name vol1 --sdc_ip ${TBIP} --allow_multi_map
 fi
 
-if [ "${REXRAYINSTALL}" == "True" ]; then
+if [ "${DOCKERINSTALL}" == "True" ]; then
   echo "Installing Docker"
   curl -sSL https://get.docker.com/ | sh
   echo "Setting Docker Permissions"
   usermod -aG docker vagrant
   echo "Setting Docker service to Start on boot"
   chkconfig docker on
+fi
+
+if [ "${REXRAYINSTALL}" == "True" ]; then
   echo "Installing REX-Ray"
   /vagrant/scripts/rexray.sh
   service docker restart
