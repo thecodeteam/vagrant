@@ -3,13 +3,21 @@ vagrant-scaleio
 
 # Description
 
-This Vagrant setup will automatically deploy three CentOS 7.1 nodes, download the ScaleIO 2.0 software and install a full ScaleIO cluster.
+This Vagrant setup will automatically deploy ScaleIO in an isolated environment on top of VirtualBox.
 
-Added to this we can also automate the installation of [Docker](https://docker.com) and [REX-Ray](https://github.com/emccode/rexray) onto this cluster, so you can demonstrate containers on top of ScaleIO.
+Environment Details:
+
+- Three CentOS 7.1 nodes
+- Each node gets installed with the latest the ScaleIO software
+- Configuration happens automatically to have a fully redundant ScaleIO cluster.
+
+Other Optional Software Installations for Container Usage (edit the Vagrant file):
+
+- [Docker](https://docker.com) (Installed by default)
+- [REX-Ray](https://github.com/codedellemc/rexray) (Installed by default)
+- [Apache Mesos](http://mesos.apache.org/) and [Marathon by Mesosphere](https://github.com/mesosphere/marathon) (NOT Installed by default)
 
 ## Requirements:
-
-There are known issues currently (Aug 2, 2016) with vagrant versions > 1.8.4 and VirtualBox 5.x.  We recommend using Vagrant 1.8.4 and VirtualBox 5.0.26 for known good results.
 
 The setup requires the `vagrant-triggers` plugin to be installed, you can do so by running:
 
@@ -20,11 +28,11 @@ For optional proxy setup, make sure you have the `vagrant-proxyconf` plugin inst
 
 ## Usage
 
-1. `git clone https://github.com/emccode/vagrant.git`
+1. `git clone https://github.com/codedellemc/vagrant.git`
 2. `cd vagrant/scaleio`
 2. Edit the proxies (if needed)
 3. Edit the `clusterinstall` parameter to adjust for different installation methods (default is True which mean a fully working ScaleIO cluster gets installed)
-3. Edit the `rexrayinstall` parameter to adjust enable or disable installation of [Docker](https://docker.com) and [REX-Ray](https://github.com/emccode/rexray) (default is True)
+3. Edit the `dockerinstall`, `rexrayinstall`, or `mesosinstall` parameter to adjust enable or disable installation
 4. Run `vagrant up` (if you have more than one Vagrant Provider on your machine run `vagrant up --provider virtualbox` instead)
 
 Note, the cluster will come up with the default unlimited license for dev and test use.
@@ -48,25 +56,32 @@ IPs,Password,Operating System,Is MDM/TB,Is SDS,SDS Device List,Is SDC
 192.168.50.11,vagrant,linux,TB,Yes,/home/vagrant/scaleio1,Yes
 `
 
-### Docker install function
+### Docker, REX-Ray, and Mesos Installation
 
-Automatically installs Docker and REX-Ray on all three nodes, and configures REX-Ray to use libStorage to manage ScaleIO volumes for persistent applications in containers.
+The sets of scripts will automatically install Docker and REX-Ray on all three nodes. Each will configure REX-Ray to use libStorage to manage ScaleIO volumes for persistent applications in containers.
 
 To run a container with persistent data stored on ScaleIO, from any of the cluster nodes you can run the following examples:
 
 Run Busybox with a volume mounted at `/data`:
-`sudo docker -it --volume-driver=rexray -v data:/data busybox`
+```
+docker -it --volume-driver=rexray -v data:/data busybox
+```
 
 Run Redis with a volume mounted at `/data`:
-`sudo docker run -d --volume-driver=rexray -v redis-data:/data redis`
+```
+docker run -d --volume-driver=rexray -v redis-data:/data redis
+```
 
 Run MySQL with a volume mounted at `/var/lib/mysql`:
-`sudo docker run -d --volume-driver=rexray -v mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw mysql
-`
+````
+docker run -d --volume-driver=rexray -v mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw mysql
+````
+
+For [Apache Mesos](http://mesos.apache.org/) and [Marathon by Mesosphere](https://github.com/mesosphere/marathon)  instructions for deploying containers, visit the [{code} Labs](https://github.com/codedellemc/labs) and try [Storage Persistence with Postgres using Mesos, Marathon, Docker, and REX-Ray](Storage Persistence with Postgres using Mesos, Marathon, Docker, and REX-Ray)
 
 #### Docker High Availability
 
-Since the nodes all have access to the ScaleIO environment, you can now try to fail over services by stopping a container with a persistent volume on one host, and start it on another. Docker's integration with REX-Ray will automatically map the same volume to the new container, and your application can continue working as intended.
+Since the nodes all have access to the ScaleIO environment, fail over services with REX-Ray are available by stopping a container with a persistent volume on one host, and start it on another. Docker's integration with REX-Ray will automatically map the same volume to the new container, and your application can continue working as intended.
 
 ### ScaleIO GUI
 
@@ -79,6 +94,3 @@ The end result will look something like this:
 # Troubleshooting
 
 If anything goes wrong during the deployment, run `vagrant destroy -f` to remove all the VMs and then `vagrant up` again to restart the deployment.
-
-# Maintainer
-- Jonas Rosland
