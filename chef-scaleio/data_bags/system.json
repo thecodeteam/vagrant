@@ -1,0 +1,8 @@
+{
+    "id":           "system",
+    "version":      "2.0-12000.122",
+    "networks":     ["10.1.1.0/24"],
+    "mgmt_network": "10.1.1.0/24",
+    "password":     "Scaleio123",
+    "platform":     "el7.x86_64"
+}

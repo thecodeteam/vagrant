@@ -1,0 +1,51 @@
+{
+  "name": "scaleio",
+  "description": "Installs/Configures scaleio",
+  "long_description": "# ScaleIO Cookbook\n\nA Chef Cookbook for EMC ScaleIO Software Defined Storage\n\n## Requirements\n\n### Platforms\n\n- Redhat Enterprise Linux\n- CentOS Linux\n\n### Chef\n\n- Chef 12.0 or later\n\n### Cookbooks\n\n## Attributes\n\n### scaleio::default\n\n<table>\n  <tr>\n    <th>Key</th>\n    <th>Type</th>\n    <th>Description</th>\n    <th>Default</th>\n  </tr>\n  <tr>\n    <td><tt>['scaleio']['bacon']</tt></td>\n    <td>Boolean</td>\n    <td>whether to include bacon</td>\n    <td><tt>true</tt></td>\n  </tr>\n</table>\n\n## Usage\n\n### scaleio::default\n\nTODO: Write usage instructions for each cookbook.\n\ne.g.\nJust include `scaleio` in your node's `run_list`:\n\n```json\n{\n  \"name\":\"my_node\",\n  \"run_list\": [\n    \"recipe[scaleio]\"\n  ]\n}\n```\n\n## Contributing\n\n1. Fork the repository on Github\n2. Create a named feature branch (like `add_component_x`)\n3. Write your change\n4. Write tests for your change (if applicable)\n5. Run the tests, ensuring they all pass\n6. Submit a Pull Request using Github\n\n## License and Authors\n\nAuthors: Aaron Spiegel <spiegela@gmail.com>\n\n",
+  "maintainer": "Dell EMC",
+  "maintainer_email": "spiegela@gmail.com",
+  "license": "All rights reserved",
+  "platforms": {
+
+  },
+  "dependencies": {
+    "sysctl": ">= 0.0.0"
+  },
+  "recommendations": {
+
+  },
+  "suggestions": {
+
+  },
+  "conflicting": {
+
+  },
+  "providing": {
+
+  },
+  "replacing": {
+
+  },
+  "attributes": {
+
+  },
+  "groupings": {
+
+  },
+  "recipes": {
+
+  },
+  "version": "0.1.0",
+  "source_url": "",
+  "issues_url": "",
+  "privacy": false,
+  "chef_versions": [
+
+  ],
+  "ohai_versions": [
+
+  ],
+  "gems": [
+
+  ]
+}

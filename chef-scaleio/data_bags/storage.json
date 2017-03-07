@@ -1,0 +1,31 @@
+{
+  "id": "storage",
+  "protection_domains": [
+    { "name": "pd1",
+      "pools": [ "ssd" ],
+      "nodes": [
+        {
+          "name": "centos1",
+          "ip": "10.1.1.34",
+          "pools": {
+            "ssd": ["/dev/sdb"]
+          }
+        },
+        {
+          "name": "centos2",
+          "ip": "10.1.1.35",
+          "pools": {
+            "ssd": ["/dev/sdb"]
+          }
+        },
+        {
+          "name": "centos3",
+          "ip": "10.1.1.36",
+          "pools": {
+            "ssd": ["/dev/sdb"]
+          }
+        }
+      ]
+    }
+  ]
+}
