@@ -18,4 +18,7 @@ scaleio:
   storagePoolName: pool1
   thinOrThick: ThinProvisioned
 EOF
-service rexray restart
+sed -i '/KillMode/a RestartSec=10' /etc/systemd/system/rexray.service
+sed -i '/KillMode/a Restart=always' /etc/systemd/system/rexray.service
+rexray start
+systemctl enable rexray

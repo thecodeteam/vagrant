@@ -19,12 +19,9 @@ Other Optional Software Installations for Container Usage (edit the Vagrant file
 
 ## Requirements:
 
-The setup requires the `vagrant-triggers` plugin to be installed, you can do so by running:
-
-`vagrant plugin install vagrant-triggers`
+VirtualBox and Vagrant
 
 For optional proxy setup, make sure you have the `vagrant-proxyconf` plugin installed.
-
 
 ## Usage
 
@@ -49,12 +46,13 @@ If set to `True` (default), a fully functional ScaleIO cluster is installed with
 If set to `False`, three base VMs are installed with IM running on the machine named MDM1. To install your cluster when using `clusterinstall=False` you do `vagrant up` as usual but once complete use your web browser and point it to https://192.168.50.12. Login with `admin` and `Scaleio123`. From here you can deploy a new ScaleIO cluster using IM, great for demo and learning purposes.
 
 ### Example CSV file for deployment of ScaleIO cluster using IM:
-`
+
+```
 IPs,Password,Operating System,Is MDM/TB,Is SDS,SDS Device List,Is SDC
 192.168.50.12,vagrant,linux,Primary,Yes,/home/vagrant/scaleio1,Yes
 192.168.50.13,vagrant,linux,Secondary,Yes,/home/vagrant/scaleio1,Yes
 192.168.50.11,vagrant,linux,TB,Yes,/home/vagrant/scaleio1,Yes
-`
+```
 
 ### Docker, REX-Ray, and Mesos Installation
 
