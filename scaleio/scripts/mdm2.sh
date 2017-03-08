@@ -114,7 +114,7 @@ MDMRPM=`ls -1 | grep "\-mdm\-"`
 SDSRPM=`ls -1 | grep "\-sds\-"`
 SDCRPM=`ls -1 | grep "\-sdc\-"`
 
-if [ "${CLUSTERINSTALL}" == "True" ]; then
+if [ "${CLUSTERINSTALL}" == "true" ]; then
   echo "Installing MDM $MDMRPM"
   MDM_ROLE_IS_MANAGER=1 rpm -Uv $MDMRPM 2>/dev/null
   echo "Installing SDS $SDSRPM"

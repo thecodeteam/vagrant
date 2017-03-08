@@ -3,11 +3,11 @@ This repository includes all projects related to working with Vagrant.
 
 Description for different projects:
 
- - [ceph](/ceph) - Use VirtualBox and Virtual Media as storage for
- Ceph to be used by Docker and REX-Ray.
- - [cloudfoundery-mesos](/cloudfoundery-mesos) - Create a Cloud Foundry environment
+ - [ceph](/ceph) - Use VirtualBox and Virtual Media as storage for Ceph to be used by Docker and REX-Ray
+ - [chef-scaleio](/chef-scaleio) - Deploy ScaleIO using Chef
+ - [cloudfoundry-mesos](/cloudfoundry-mesos) - Create a Cloud Foundry environment
  that runs Diego cells on top of Mesos
- - [puppet-scaleio](/puppet-scaleio) - Deploy ScaleIO usin(g a Puppet Module
+ - [puppet-scaleio](/puppet-scaleio) - Deploy ScaleIO using a Puppet Module
  - [rexray](/rexray) - Deploy a simple 2 Node VirtualBox environment for testing REX-Ray with Virtual Media
  - [scaleio](/scaleio) - Deploy a three node ScaleIO cluster and choose to install Docker, REX-Ray, and Mesos with Marathon for testing persistent applications in an isolated environment.
 
