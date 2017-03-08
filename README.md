@@ -1,8 +1,20 @@
 # Vagrant
 This repository includes all projects related to working with Vagrant.
 
-See the directory listing above relating to different projects.
+Description for different projects:
 
-Support
--------
-Please file bugs and issues on the Github issues page for this project. This is to help keep track and document everything related to this repo. For general discussions and further support you can join the [{code} Community slack channel](http://community.codedellemc.com/). The code and documentation are released with no warranties or SLAs and are intended to be supported through a community driven process.
+ - [ceph](/ceph) - Use VirtualBox and Virtual Media as storage for
+ Ceph to be used by Docker and REX-Ray.
+ - [cloudfoundery-mesos](/cloudfoundery-mesos) - Create a Cloud Foundry environment
+ that runs Diego cells on top of Mesos
+ - [puppet-scaleio](/puppet-scaleio) - Deploy ScaleIO usin(g a Puppet Module
+ - [rexray](/rexray) - Deploy a simple 2 Node VirtualBox environment for testing REX-Ray with Virtual Media
+ - [scaleio](/scaleio) - Deploy a three node ScaleIO cluster and choose to install Docker, REX-Ray, and Mesos with Marathon for testing persistent applications in an isolated environment.
+
+# Contribution Rules
+
+Create a fork of the project into your own repository. Make all your necessary changes and create a pull request with a description on what was added or removed and details explaining the changes in lines of code. If approved, project owners will merge it.
+
+# Support
+
+Please file bugs and issues on the [GitHub issues page](https://github.com/codedellemc/vagrant/issues). This is to help keep track and document everything related to this repo. For general discussions and further support you can join the [{code} by Dell EMC Community Slack](http://community.codedellemc.com/). The code and documentation are released with no warranties or SLAs and are intended to be supported through a community driven process.

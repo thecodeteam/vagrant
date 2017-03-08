@@ -24,16 +24,33 @@ firstmdmip = "#{network}.12"
 secondmdmip = "#{network}.13"
 
 # Install ScaleIO cluster automatically or IM only
-clusterinstall = "True" #If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
+#If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
+if ENV['SCALEIO_CLUSTER_INSTALL']
+  clusterinstall = ENV['SCALEIO_CLUSTER_INSTALL'].to_s.downcase
+else
+  clusterinstall = "true"
+end
 
 # Install Docker automatically
-dockerinstall = "True"
+if ENV['SCALEIO_DOCKER_INSTALL']
+  dockerinstall = ENV['SCALEIO_DOCKER_INSTALL'].to_s.downcase
+else
+  dockerinstall = "true"
+end
 
 # Install REX-Ray automatically
-rexrayinstall = "True"
+if ENV['SCALEIO_REXRAY_INSTALL']
+  rexrayinstall = ENV['SCALEIO_REXRAY_INSTALL'].to_s.downcase
+else
+  rexrayinstall = "true"
+end
 
 # Install and Configure Mesos Automatically
-mesosinstall = "False"
+if ENV['SCALEIO_MESOS_INSTALL']
+  mesosinstall = ENV['SCALEIO_MESOS_INSTALL'].to_s.downcase
+else
+  mesosinstall = "false"
+end
 
 # version of installation package
 version = "2.0-0.0"
