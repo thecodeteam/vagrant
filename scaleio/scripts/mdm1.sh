@@ -52,6 +52,10 @@ do
     REXRAYINSTALL="$2"
     shift
     ;;
+    -ds|--swarminstall)
+    SWARMINSTALL="$2"
+    shift
+    ;;
     -ms|--mesosinstall)
     MESOSINSTALL="$2"
     shift
@@ -71,6 +75,7 @@ echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
 echo CLUSTERINSTALL     = "${CLUSTERINSTALL}"
 echo DOCKERINSTALL     = "${DOCKERINSTALL}"
+echo SWARMINSTALL     = "${SWARMINSTALL}"
 echo MESOSINSTALL     = "${MESOSINSTALL}"
 echo ZIP_OS    = "${ZIP_OS}"
 
@@ -116,25 +121,6 @@ if [ "${CLUSTERINSTALL}" == "true" ]; then
   MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv $SDCRPM 2>/dev/null
 fi
 
-if [ "${DOCKERINSTALL}" == "true" ]; then
-  echo "Installing Docker"
-  curl -sSL https://get.docker.com/ | sh
-  echo "Setting Docker Permissions"
-  usermod -aG docker vagrant
-  echo "Setting Docker service to Start on boot"
-  chkconfig docker on
-fi
-
-if [ "${REXRAYINSTALL}" == "true" ]; then
-  echo "Installing REX-Ray"
-  /vagrant/scripts/rexray.sh
-  service docker restart
-fi
-
-if [ "${MESOSINSTALL}" == "true" ]; then
-  /vagrant/scripts/mesos-master.sh
-fi
-
 # Always install ScaleIO Gateway
 cd /vagrant
 DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep Gateway_for_Linux | awk -F'/' '{print $1 "/" $2 "/" $3}' | head -1`
@@ -156,6 +142,31 @@ GUIRPM=`ls -1 | grep rpm`
 rpm2cpio $GUIRPM | cpio -idmv
 cp -R opt/emc/scaleio/gui /vagrant
 rm -fr opt/
+
+if [ "${DOCKERINSTALL}" == "true" ]; then
+  echo "Installing Docker"
+  curl -sSL https://get.docker.com/ | sh
+  echo "Setting Docker Permissions"
+  usermod -aG docker vagrant
+  echo "Setting Docker service to Start on boot"
+  chkconfig docker on
+fi
+
+if [ "${REXRAYINSTALL}" == "true" ]; then
+  echo "Installing REX-Ray"
+  /vagrant/scripts/rexray.sh
+  service docker restart
+fi
+
+if [ "${SWARMINSTALL}" == "true" ]; then
+  echo "Configuring Host as Docker Swarm Manager"
+  docker swarm init --listen-addr ${FIRSTMDMIP} --advertise-addr ${FIRSTMDMIP}
+  docker swarm join-token -q worker > /vagrant/swarm_worker_token
+fi
+
+if [ "${MESOSINSTALL}" == "true" ]; then
+  /vagrant/scripts/mesos-master.sh
+fi
 
 if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"

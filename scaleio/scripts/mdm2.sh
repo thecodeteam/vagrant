@@ -56,6 +56,10 @@ do
     REXRAYINSTALL="$2"
     shift
     ;;
+    -ds|--swarminstall)
+    SWARMINSTALL="$2"
+    shift
+    ;;
     -ms|--mesosinstall)
     MESOSINSTALL="$2"
     shift
@@ -78,6 +82,7 @@ echo PASSWORD    = "${PASSWORD}"
 echo CLUSTERINSTALL   =  "${CLUSTERINSTALL}"
 echo DOCKERINSTALL     = "${DOCKERINSTALL}"
 echo REXRAYINSTALL     = "${REXRAYINSTALL}"
+echo SWARMINSTALL     = "${SWARMINSTALL}"
 echo MESOSINSTALL     = "${MESOSINSTALL}"
 echo ZIP_OS    = "${ZIP_OS}"
 
@@ -156,6 +161,12 @@ if [ "${REXRAYINSTALL}" == "true" ]; then
   echo "Installing REX-Ray"
   /vagrant/scripts/rexray.sh
   service docker restart
+fi
+
+if [ "${SWARMINSTALL}" == "true" ]; then
+  echo "Configuring Host as Docker Swarm Worker"
+  WORKER_TOKEN=`cat /vagrant/swarm_worker_token`
+	docker swarm join --listen-addr ${SECONDMDMIP} --advertise-addr ${SECONDMDMIP} --token=$WORKER_TOKEN ${FIRSTMDMIP}
 fi
 
 if [ "${MESOSINSTALL}" == "true" ]; then

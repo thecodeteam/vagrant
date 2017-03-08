@@ -15,6 +15,7 @@ Optional Software Installations for Containers (read usage instructions below):
 
 - [Docker](https://docker.com)
 - [REX-Ray](https://github.com/codedellemc/rexray)
+- [Docker Swarm](https://docs.docker.com/engine/swarm/)
 - [Apache Mesos](http://mesos.apache.org/) and [Marathon by Mesosphere](https://github.com/mesosphere/marathon)
 
 ## Requirements:
@@ -30,6 +31,7 @@ Set the following Environment Variables to `true` or `false` for your needs (mus
  - `SCALEIO_CLUSTER_INSTALL` - Default is `true`. If `true` a fully working ScaleIO cluster is installed. False only installs IM on node MDM1.
  - `SCALEIO_DOCKER_INSTALL` - Default is `true`.
  - `SCALEIO_REXRAY_INSTALL` - Default is `true`.
+ - `SCALEIO_SWARM_INSTALL` - Default is `false`. Set to `true` to automatically configure Docker Swarm.
  - `SCALEIO_MESOS_INSTALL` - Default is `false`. Set to `true` to automatically install Apache Mesos and Marathon.
 
 1. `git clone https://github.com/codedellemc/vagrant.git`
@@ -62,7 +64,7 @@ IPs,Password,Operating System,Is MDM/TB,Is SDS,SDS Device List,Is SDC
 192.168.50.11,vagrant,linux,TB,Yes,/home/vagrant/scaleio1,Yes
 ```
 
-### Docker, REX-Ray, and Mesos Installation
+### Docker and REX-Ray
 
 Docker and REX-Ray will automatically be installed on all three nodes but can be overridden using the Environment Variables above. Each will configure REX-Ray to use libStorage to manage ScaleIO volumes for persistent applications in containers.
 
@@ -85,11 +87,36 @@ docker run -d --volume-driver=rexray -v mysql-data:/var/lib/mysql -e MYSQL_ROOT_
 
 Visit the [{code} Labs](https://github.com/codedellemc/labs) for more examples using Postgres and Minecraft.
 
-For [Apache Mesos](http://mesos.apache.org/) and [Marathon by Mesosphere](https://github.com/mesosphere/marathon)  instructions for deploying containers, visit the [{code} Labs](https://github.com/codedellemc/labs) and try [Storage Persistence with Postgres using Mesos, Marathon, Docker, and REX-Ray](Storage Persistence with Postgres using Mesos, Marathon, Docker, and REX-Ray). Mesos and Marathon Web GUIs will be accessible from `http://192.168.50.12:5050` and `http://192.168.50.12:8080`.
-
-#### Docker High Availability
+##### Docker High Availability
 
 Since the nodes all have access to the ScaleIO environment, fail over services with REX-Ray are available by stopping a container with a persistent volume on one host, and start it on another. Docker's integration with REX-Ray will automatically map the same volume to the new container, and your application can continue working as intended.
+
+### Docker Swarm and Apache Mesos
+
+In each configuration, MDM1 is the Master/Manager machine because this is the ScaleIO Gateway for API communication. MDM2 and TB are configured as Worker nodes with no management functionality.
+
+##### Docker Swarm
+
+The `docker service` command is used to create a service that is scheduled on nodes and can be rescheduled on a node failure. As a quick demonstration go to MDM1 and run a postgres service and pin it to the worker nodes:
+
+```
+$ docker service create --replicas 1 --name pg -e POSTGRES_PASSWORD=mysecretpassword \
+--mount type=volume,target=/var/lib/postgresql/data,source=postgres,volume-driver=rexray \
+--constraint 'node.role == worker' postgres
+```
+
+Use `docker service ps pg` to see which node it was scheduled on. Go to that node and stop the docker service with `sudo systemctl stop docker`. On MDM1, a `docker service ps pg` will show the container being rescheduled on a different worker.
+
+If it doesn't work, restart the service on the node, go to the other and download the image using `docker pull postgres` and start again.
+
+##### Apache Mesos with Marathon
+
+For [Apache Mesos](http://mesos.apache.org/) and [Marathon by Mesosphere](https://github.com/mesosphere/marathon)  instructions for deploying containers, visit the [{code} Labs](https://github.com/codedellemc/labs) and try [Storage Persistence with Postgres using Mesos, Marathon, Docker, and REX-Ray](Storage Persistence with Postgres using Mesos, Marathon, Docker, and REX-Ray). Mesos and Marathon Web GUIs will be accessible from `http://192.168.50.12:5050` and `http://192.168.50.12:8080`.
+
+```
+$ curl -O https://raw.githubusercontent.com/codedellemc/labs/master/demo-persistence-with-postgres-marathon-docker/postgres.json
+$ curl -k -XPOST -d @postgres.json -H "Content-Type: application/json" http://192.168.50.12:8080/v2/apps
+```
 
 ### ScaleIO GUI
 
