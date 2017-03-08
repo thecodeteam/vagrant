@@ -111,7 +111,7 @@ MDMRPM=`ls -1 | grep "\-mdm\-"`
 SDSRPM=`ls -1 | grep "\-sds\-"`
 SDCRPM=`ls -1 | grep "\-sdc\-"`
 
-if [ "${CLUSTERINSTALL}" == "True" ]; then
+if [ "${CLUSTERINSTALL}" == "true" ]; then
   echo "Installing MDM $MDMRPM"
   MDM_ROLE_IS_MANAGER=0 rpm -Uv $MDMRPM 2>/dev/null
   echo "Installing SDS $SDSRPM"
@@ -120,7 +120,7 @@ if [ "${CLUSTERINSTALL}" == "True" ]; then
   MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv $SDCRPM 2>/dev/null
 fi
 
-if [ "${DOCKERINSTALL}" == "True" ]; then
+if [ "${DOCKERINSTALL}" == "true" ]; then
   echo "Installing Docker"
   curl -sSL https://get.docker.com/ | sh
   echo "Setting Docker Permissions"
@@ -129,13 +129,13 @@ if [ "${DOCKERINSTALL}" == "True" ]; then
   chkconfig docker on
 fi
 
-if [ "${REXRAYINSTALL}" == "True" ]; then
+if [ "${REXRAYINSTALL}" == "true" ]; then
   echo "Installing REX-Ray"
   /vagrant/scripts/rexray.sh
   service docker restart
 fi
 
-if [ "${MESOSINSTALL}" == "True" ]; then
+if [ "${MESOSINSTALL}" == "true" ]; then
   /vagrant/scripts/mesos-node.sh
 fi
 

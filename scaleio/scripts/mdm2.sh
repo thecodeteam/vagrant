@@ -143,7 +143,7 @@ if [ "${CLUSTERINSTALL}" == "True" ]; then
   scli --mdm_ip ${FIRSTMDMIP} --map_volume_to_sdc --volume_name vol1 --sdc_ip ${TBIP} --allow_multi_map
 fi
 
-if [ "${DOCKERINSTALL}" == "True" ]; then
+if [ "${DOCKERINSTALL}" == "true" ]; then
   echo "Installing Docker"
   curl -sSL https://get.docker.com/ | sh
   echo "Setting Docker Permissions"
@@ -152,13 +152,13 @@ if [ "${DOCKERINSTALL}" == "True" ]; then
   chkconfig docker on
 fi
 
-if [ "${REXRAYINSTALL}" == "True" ]; then
+if [ "${REXRAYINSTALL}" == "true" ]; then
   echo "Installing REX-Ray"
   /vagrant/scripts/rexray.sh
   service docker restart
 fi
 
-if [ "${MESOSINSTALL}" == "True" ]; then
+if [ "${MESOSINSTALL}" == "true" ]; then
   /vagrant/scripts/mesos-node.sh
 fi
 
