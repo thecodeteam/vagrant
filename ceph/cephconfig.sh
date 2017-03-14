@@ -41,6 +41,11 @@ fi
 
 ceph-deploy mon create-initial
 for x in $(seq 1 $NUM_NODES); do
-	ceph-deploy osd create --zap-disk ceph-server-$x:/dev/sdb
+	ssh ceph-server-$x sudo ceph-disk list /dev/sda | grep unknown
+	if [ $? -eq 0 ]; then
+		ceph-deploy osd create --zap-disk ceph-server-$x:/dev/sda
+	else
+		ceph-deploy osd create --zap-disk ceph-server-$x:/dev/sdb
+	fi
 done
 ceph-deploy admin localhost
