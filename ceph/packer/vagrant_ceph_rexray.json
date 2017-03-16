@@ -12,6 +12,17 @@
           "checksum": "ca3e37ebd30d0b10522f9d3b7d97ef55233c2a121b83676b84acadf019451182"
         }
       ]
+    },
+    {
+      "version": "0.0.2",
+      "providers": [
+        {
+          "name": "virtualbox",
+          "url": "https://github.com/codedellemc/vagrant/releases/download/ceph_rexray_v0.0.2/vagrant_ceph_rexray_virtualbox.box",
+          "checksum_type": "sha256",
+          "checksum": "7f962989baa805982490cd744d07bb89cca3e929388579a97c05a9e62dd54898"
+        }
+      ]
     }
   ]
 }
