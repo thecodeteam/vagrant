@@ -36,6 +36,10 @@ do
     SECONDMDMIP="$2"
     shift
     ;;
+    -tb|--tbip)
+    TBIP="$2"
+    shift
+    ;;
     -p|--password)
     PASSWORD="$2"
     shift
@@ -73,6 +77,7 @@ echo OS    = "${OS}"
 echo PACKAGENAME    = "${PACKAGENAME}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
+echo TBIP    = "${TBIP}"
 echo CLUSTERINSTALL     = "${CLUSTERINSTALL}"
 echo DOCKERINSTALL     = "${DOCKERINSTALL}"
 echo SWARMINSTALL     = "${SWARMINSTALL}"
@@ -99,7 +104,7 @@ if [ "${INTERFACE_STATE}" == "down" ]; then
 fi
 
 truncate -s 100GB ${DEVICE}
-yum install unzip numactl libaio -y
+yum install unzip numactl libaio rsync -y
 yum install java-1.8.0-openjdk -y
 
 cd /vagrant
@@ -140,7 +145,7 @@ DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | g
 cd /vagrant/scaleio/$DIR
 GUIRPM=`ls -1 | grep rpm`
 rpm2cpio $GUIRPM | cpio -idmv
-cp -R opt/emc/scaleio/gui /vagrant
+rsync -a opt/emc/scaleio/gui /vagrant
 rm -fr opt/
 
 if [ "${DOCKERINSTALL}" == "true" ]; then
@@ -150,6 +155,7 @@ if [ "${DOCKERINSTALL}" == "true" ]; then
   usermod -aG docker vagrant
   echo "Setting Docker service to Start on boot"
   chkconfig docker on
+  service docker restart
 fi
 
 if [ "${REXRAYINSTALL}" == "true" ]; then
@@ -159,9 +165,10 @@ if [ "${REXRAYINSTALL}" == "true" ]; then
 fi
 
 if [ "${SWARMINSTALL}" == "true" ]; then
-  echo "Configuring Host as Docker Swarm Manager"
-  docker swarm init --listen-addr ${FIRSTMDMIP} --advertise-addr ${FIRSTMDMIP}
-  docker swarm join-token -q worker > /vagrant/swarm_worker_token
+  echo "Configuring Host as Docker Swarm Manager and then demoting TB to a Swarm Worker"
+  MANAGER_TOKEN=`cat /vagrant/swarm_manager_token`
+	docker swarm join --listen-addr ${FIRSTMDMIP} --advertise-addr ${FIRSTMDMIP} --token=$MANAGER_TOKEN ${TBIP}
+  docker node demote tb.scaleio.local
 fi
 
 if [ "${MESOSINSTALL}" == "true" ]; then

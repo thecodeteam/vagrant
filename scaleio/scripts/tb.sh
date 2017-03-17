@@ -60,6 +60,10 @@ do
     MESOSINSTALL="$2"
     shift
     ;;
+    -vf|--verifyfiles)
+    VERIFYFILES="$2"
+    shift
+    ;;
     *)
     # unknown option
     ;;
@@ -79,6 +83,7 @@ echo DOCKERINSTALL     = "${DOCKERINSTALL}"
 echo REXRAYINSTALL     = "${REXRAYINSTALL}"
 echo SWARMINSTALL     = "${SWARMINSTALL}"
 echo MESOSINSTALL     = "${MESOSINSTALL}"
+echo VERIFYFILES     = "${VERIFYFILES}"
 echo ZIP_OS    = "${ZIP_OS}"
 
 VERSION_MAJOR=`echo "${VERSION}" | awk -F \. {'print $1'}`
@@ -101,8 +106,46 @@ if [ "${INTERFACE_STATE}" == "down" ]; then
 fi
 
 truncate -s 100GB ${DEVICE}
-yum install unzip numactl libaio wget -y
+yum install unzip numactl libaio wget bc -y
+
+if [ "${VERIFYFILES}" == "true" ]; then
+
+  URL="http://downloads.emc.com/emc-com/usa/ScaleIO/ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip"
+
+  echo "Verifying that the SIO package is available from downloads.emc.com"
+  echo "If you don't want this to happen set VERIFYFILES to false in the Vagrantfile"
+  if curl --output /dev/null --silent --head --fail "$URL"; then
+    echo "URL exists: $URL. Continuing."
+  else
+    echo "URL does not exist: $URL. Please try to run \"vagrant up\" again."
+    exit
+  fi
+
+  FILESIZE=`curl -sI $URL | grep Content-Length | awk '{print $2}' | tr -d $'\r' | bc -l`
+
+  if [ "$FILESIZE" -lt 1 ]; then
+    echo "The file on downloads.emc.com doesn't look correct. Please try to run \"vagrant up\" again."
+    exit
+  else
+    echo "The file on downloads.emc.com is larger than 0 bytes. Continuing."
+  fi
+
+fi
+
 cd /vagrant
+
+if [ -f "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" ]; then
+  STOREDFILE=`wc -c <"ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $1}'`
+  echo "Stored file size is" $STOREDFILE
+  echo "File on downloads.emc.com is" $FILESIZE
+  if [ "$FILESIZE" -gt "$STOREDFILE" ]; then
+    echo "The file size of the stored ScaleIO zip is incorrect. Will remove and download the new one."
+    rm "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip"
+  else
+    echo "The file sizes of the stored ScaleIO zip and the zip file on downloads.emc.com are the same. Continuing."
+  fi
+fi
+
 if [ ! -f "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" ];
 then
   echo "Downloading SIO package from downloads.emc.com"
@@ -137,6 +180,7 @@ if [ "${DOCKERINSTALL}" == "true" ]; then
   usermod -aG docker vagrant
   echo "Setting Docker service to Start on boot"
   chkconfig docker on
+  service docker restart
 fi
 
 if [ "${REXRAYINSTALL}" == "true" ]; then
@@ -146,9 +190,10 @@ if [ "${REXRAYINSTALL}" == "true" ]; then
 fi
 
 if [ "${SWARMINSTALL}" == "true" ]; then
-  echo "Configuring Host as Docker Swarm Worker"
-  WORKER_TOKEN=`cat /vagrant/swarm_worker_token`
-	docker swarm join --listen-addr ${TBIP} --advertise-addr ${TBIP} --token=$WORKER_TOKEN ${FIRSTMDMIP}
+  echo "Configuring Host as Docker Swarm Manager - will be demoted to Worker later by MDM1"
+  docker swarm init --listen-addr ${TBIP} --advertise-addr ${TBIP}
+  docker swarm join-token -q worker > /vagrant/swarm_worker_token
+  docker swarm join-token -q manager > /vagrant/swarm_manager_token
 fi
 
 if [ "${MESOSINSTALL}" == "true" ]; then

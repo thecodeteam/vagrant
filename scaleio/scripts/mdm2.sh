@@ -36,7 +36,7 @@ do
     SECONDMDMIP="$2"
     shift
     ;;
-    -t|--tbip)
+    -tb|--tbip)
     TBIP="$2"
     shift
     ;;
@@ -155,6 +155,7 @@ if [ "${DOCKERINSTALL}" == "true" ]; then
   usermod -aG docker vagrant
   echo "Setting Docker service to Start on boot"
   chkconfig docker on
+  service docker restart
 fi
 
 if [ "${REXRAYINSTALL}" == "true" ]; then
