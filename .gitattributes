@@ -1,0 +1,2 @@
+# force LF line endings on checkout for windows.
+*.sh eol=lf
