@@ -33,6 +33,8 @@ Set the following Environment Variables to `true` or `false` for your needs (mus
  - `SCALEIO_REXRAY_INSTALL` - Default is `true`.
  - `SCALEIO_SWARM_INSTALL` - Default is `false`. Set to `true` to automatically configure Docker Swarm.
  - `SCALEIO_MESOS_INSTALL` - Default is `false`. Set to `true` to automatically install Apache Mesos and Marathon.
+ - `SCALEIO_RAM` - Default is `1024`. Depending on the docker images being used, RAM needs to be increased to 1.5GB or 2GB for MDM2 and TB. MDM1 will always use 3GB
+ - `SCALEIO_VERIFY_FILES` - Default is `true`. This will verify the ScaleIO package is available for download.
 
 1. `git clone https://github.com/codedellemc/vagrant.git`
 2. `cd vagrant/scaleio`
