@@ -59,9 +59,18 @@ else
   mesosinstall = "false"
 end
 
+# In some cases more memory is needed for applications.
+# this environment variable is used to set the mount of RAM for MDM2 and TB. MDM1 always gets 3GB.
+# must be set in 1024 amounts
+if ENV['SCALEIO_RAM']
+  vmram = ENV['SCALEIO_RAM'].to_s.downcase
+else
+  vmram = "1024"
+end
+
 # Verify that the ScaleIO package has the correct size
-if ENV['VERIFYFILES']
-  verifyfiles = ENV['VERIFYFILES'].to_s.downcase
+if ENV['SCALEIO_VERIFY_FILES']
+  verifyfiles = ENV['SCALEIO_VERIFY_FILES'].to_s.downcase
 else
   verifyfiles = "true"
 end
@@ -110,7 +119,7 @@ Vagrant.configure("2") do |config|
       node_config.vm.box_url = "#{vagrantboxurl}"
       node_config.vm.host_name = "#{node[:hostname]}.#{domain}"
       node_config.vm.provider :virtualbox do |vb|
-        vb.customize ["modifyvm", :id, "--memory", "1024"]
+        vb.customize ["modifyvm", :id, "--memory", vmram]
       end
 
       if node[:hostname] == "mdm1"
