@@ -175,12 +175,15 @@ fi
 
 if [ "${DOCKERINSTALL}" == "true" ]; then
   echo "Installing Docker"
-  curl -sSL https://get.docker.com/ | sh
+  yum install -y yum-utils
+  yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  yum makecache fast
+  yum install docker-ce -y
+  echo "Setting Docker service to Start on boot"
+  systemctl enable docker
+  systemctl start docker
   echo "Setting Docker Permissions"
   usermod -aG docker vagrant
-  echo "Setting Docker service to Start on boot"
-  chkconfig docker on
-  service docker restart
 fi
 
 if [ "${REXRAYINSTALL}" == "true" ]; then
