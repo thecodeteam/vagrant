@@ -189,7 +189,6 @@ fi
 if [ "${REXRAYINSTALL}" == "true" ]; then
   echo "Installing REX-Ray"
   /vagrant/scripts/rexray.sh
-  service docker restart
 fi
 
 if [ "${SWARMINSTALL}" == "true" ]; then
