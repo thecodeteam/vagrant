@@ -124,4 +124,9 @@ if [ "$HOSTNAME" == "mdm2.scaleio.local" ]; then
   if [ -n "$CSR" ]; then
     kubectl certificate approve $CSR
   fi
+  sleep 8
+  echo "Starting Kubernetes Cluster DNS Service"
+  kubectl create clusterrolebinding serviceaccounts-cluster-admin --clusterrole=cluster-admin --group=system:serviceaccounts
+  kubectl create -f https://raw.githubusercontent.com/kelseyhightower/kubernetes-the-hard-way/master/services/kubedns.yaml
+  kubectl create -f https://raw.githubusercontent.com/kelseyhightower/kubernetes-the-hard-way/master/deployments/kubedns.yaml
 fi

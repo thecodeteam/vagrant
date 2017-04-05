@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-0
+spec:
+  containers:
+  - image: gcr.io/google_containers/test-webserver
+    name: pod-0
+    volumeMounts:
+    - mountPath: /test-pd
+      name: vol0
+  volumes:
+  - name: vol0
+    scaleIO:
+      gateway: https://192.168.50.12:443/api
+      system: cluster1
+      protectionDomain: pdomain
+      storagePool: pool1
+      sslEnabled: false
+      volumeName: k8vol01
+      secretRef:
+        name: sio-secret

@@ -63,7 +63,6 @@ end
 if ENV['SCALEIO_K8_INSTALL']
   k8install = ENV['SCALEIO_K8_INSTALL'].to_s.downcase
   dockerinstall = "false"
-  rexrayinstall = "false"
 else
   k8install = "false"
 end
@@ -142,6 +141,7 @@ Vagrant.configure("2") do |config|
         # adding certificates needed for k8 installation
         if k8install == "true"
           node_config.vm.provision "file", source: "scripts/k8/certs", destination: "/home/vagrant/k8certs"
+          node_config.vm.provision "file", source: "scripts/k8/examples", destination: "/home/vagrant/k8examples"
         end
 
         node_config.vm.provision "shell" do |s|
