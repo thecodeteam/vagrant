@@ -1,12 +1,13 @@
 #!/bin/bash
 echo "Installing Kubernetes Controller"
-echo "Installing Kubernetes Controller Certificates"
+echo "Moving Kubernetes Controller Certificates"
 mkdir -p /var/lib/kubernetes/
 cp /home/vagrant/k8certs/ca.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/ca-key.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/kubernetes.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/kubernetes-key.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/token.csv /var/lib/kubernetes/
+rm -rf /home/vagrant/k8certs
 echo "Downloading kube-apiserver"
 curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/linux/amd64/kube-apiserver
 echo "Downloading kube-controller-manager"
@@ -64,8 +65,8 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
-echo "Starting Kubernetes API Service"
 mv kube-apiserver.service /etc/systemd/system/
+echo "Starting Kubernetes API Service"
 systemctl daemon-reload
 systemctl enable kube-apiserver
 systemctl start kube-apiserver
@@ -96,8 +97,8 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
-echo "Starting Kubernetes Controller Manager Service"
 mv kube-controller-manager.service /etc/systemd/system/
+echo "Starting Kubernetes Controller Manager Service"
 systemctl daemon-reload
 systemctl enable kube-controller-manager
 systemctl start kube-controller-manager
@@ -119,12 +120,13 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
-echo "Starting Kubernetes Scheduler Service"
 mv kube-scheduler.service /etc/systemd/system/
+echo "Starting Kubernetes Scheduler Service"
 systemctl daemon-reload
 systemctl enable kube-scheduler
 systemctl start kube-scheduler
 systemctl status kube-scheduler
+echo "Creating the kubelet bootstrap cluster role"
 sleep 20s
 kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --user=kubelet-bootstrap
 #echo "Starting Kubernetes Cluster DNS Service"

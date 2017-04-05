@@ -2,11 +2,13 @@
 echo "Installing Kubernetes Worker Components"
 mkdir -p /var/lib/{kubelet,kube-proxy,kubernetes}
 mkdir -p /var/run/kubernetes
+echo "Moving Kubernetes Certificates"
 cp /home/vagrant/k8certs/ca.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/admin.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/admin-key.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/bootstrap.kubeconfig /var/lib/kubelet
 cp /home/vagrant/k8certs/kube-proxy.kubeconfig /var/lib/kube-proxy
+rm -rf /home/vagrant/k8certs
 ENP0S8IP=$(ip -o -4 addr show enp0s8 | awk -F '[ /]+' '/global/ {print $4}')
 K8CONTROLLERIP=192.168.50.12
 echo "Installing Docker 1.12.6"
@@ -111,12 +113,12 @@ systemctl enable kube-proxy
 systemctl start kube-proxy
 systemctl status kube-proxy
 echo "Configuring Kubectl"
-kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://${K8CONTROLLERIP}:6443
+kubectl config set-cluster k8-scaleio --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://${K8CONTROLLERIP}:6443
 kubectl config set-credentials admin --client-certificate=/var/lib/kubernetes/admin.pem --client-key=/var/lib/kubernetes/admin-key.pem
-kubectl config set-context kubernetes-the-hard-way --cluster=kubernetes-the-hard-way --user=admin
-kubectl config use-context kubernetes-the-hard-way
-MDM1UP=$(ping -c 1 $K8CONTROLLERIP | grep icmp* | wc -l)
-if [ $MDM1UP -eq "1" ]; then
+kubectl config set-context k8-scaleio --cluster=k8-scaleio --user=admin
+kubectl config use-context k8-scaleio
+HOSTNAME=$(hostname)
+if [ "$HOSTNAME" == "mdm2.scaleio.local" ]; then
   sleep 20s
   CSR=$(kubectl get csr | grep csr | awk -F" " '{print $1}')
   if [ -n "$CSR" ]; then
