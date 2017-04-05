@@ -41,10 +41,12 @@ echo "Installing CNI"
 mkdir -p /opt/cni
 curl -s -O https://storage.googleapis.com/kubernetes-release/network-plugins/cni-amd64-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz
 sudo tar -xvf cni-amd64-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz -C /opt/cni
-echo "Installing Kubelet"
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kubectl
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kubelet
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kube-proxy
+echo "Downloading kubectl"
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/linux/amd64/kubectl
+echo "Downloading kubelet"
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/linux/amd64/kubelet
+echo "Downloading kube-proxy"
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/linux/amd64/kube-proxy
 chmod +x kubectl kubelet kube-proxy
 mv kubectl kubelet kube-proxy /usr/bin/
 echo "Creating Kubelet Service"
@@ -109,12 +111,15 @@ systemctl enable kube-proxy
 systemctl start kube-proxy
 systemctl status kube-proxy
 echo "Configuring Kubectl"
-sleep 20s
 kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://${K8CONTROLLERIP}:6443
 kubectl config set-credentials admin --client-certificate=/var/lib/kubernetes/admin.pem --client-key=/var/lib/kubernetes/admin-key.pem
 kubectl config set-context kubernetes-the-hard-way --cluster=kubernetes-the-hard-way --user=admin
 kubectl config use-context kubernetes-the-hard-way
-CSR=$(kubectl get csr | grep csr | awk -F" " '{print $1}')
-if [ -n "$CSR" ]; then
-  kubectl certificate approve $CSR
+MDM1UP=$(ping -c 1 $K8CONTROLLERIP | grep icmp* | wc -l)
+if [ $MDM1UP -eq "1" ]; then
+  sleep 20s
+  CSR=$(kubectl get csr | grep csr | awk -F" " '{print $1}')
+  if [ -n "$CSR" ]; then
+    kubectl certificate approve $CSR
+  fi
 fi

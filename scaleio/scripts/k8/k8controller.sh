@@ -1,15 +1,21 @@
 #!/bin/bash
-echo "Installing Kubernetes Controller Components"
+echo "Installing Kubernetes Controller"
+echo "Installing Kubernetes Controller Certificates"
 mkdir -p /var/lib/kubernetes/
 cp /home/vagrant/k8certs/ca.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/ca-key.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/kubernetes.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/kubernetes-key.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/token.csv /var/lib/kubernetes/
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kube-apiserver
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kube-controller-manager
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kube-scheduler
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.0/bin/linux/amd64/kubectl
+echo "Downloading kube-apiserver"
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/linux/amd64/kube-apiserver
+echo "Downloading kube-controller-manager"
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/linux/amd64/kube-controller-manager
+echo "Downloading kube-scheduler"
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/linux/amd64/kube-scheduler
+echo "Downloading kubectl"
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.6.1/bin/linux/amd64/kubectl
+echo "Setting Permissions and Moving Executables"
 chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl
 mv kube-apiserver kube-controller-manager kube-scheduler kubectl /usr/bin/
 echo "Creating Kubernetes API Service"
