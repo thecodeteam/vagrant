@@ -17,6 +17,7 @@ Optional Software Installations for Containers (read usage instructions below):
 - [REX-Ray](https://github.com/codedellemc/rexray)
 - [Docker Swarm](https://docs.docker.com/engine/swarm/)
 - [Apache Mesos](http://mesos.apache.org/) and [Marathon by Mesosphere](https://github.com/mesosphere/marathon)
+- [Kubernetes](https://kubernetes.io/)
 
 ## Requirements:
 
@@ -33,6 +34,7 @@ Set the following Environment Variables to `true` or `false` for your needs (mus
  - `SCALEIO_REXRAY_INSTALL` - Default is `true`.
  - `SCALEIO_SWARM_INSTALL` - Default is `false`. Set to `true` to automatically configure Docker Swarm.
  - `SCALEIO_MESOS_INSTALL` - Default is `false`. Set to `true` to automatically install Apache Mesos and Marathon.
+ - `SCALEIO_K8_INSTALL` - Default is `false`. Set to `true` to automatically install Kubernetes.
  - `SCALEIO_RAM` - Default is `1024`. Depending on the docker images being used, RAM needs to be increased to 1.5GB or 2GB for MDM2 and TB. MDM1 will always use 3GB
  - `SCALEIO_VERIFY_FILES` - Default is `true`. This will verify the ScaleIO package is available for download.
 
@@ -93,9 +95,9 @@ Visit the [{code} Labs](https://github.com/codedellemc/labs) for more examples u
 
 Since the nodes all have access to the ScaleIO environment, fail over services with REX-Ray are available by stopping a container with a persistent volume on one host, and start it on another. Docker's integration with REX-Ray will automatically map the same volume to the new container, and your application can continue working as intended.
 
-### Docker Swarm and Apache Mesos
+### Docker Swarm, Apache Mesos, and Kubernetes
 
-In each configuration, MDM1 is the Master/Manager machine because this is the ScaleIO Gateway for API communication. MDM2 and TB are configured as Worker nodes with no management functionality.
+In each configuration, MDM1 is the Master/Manager/Controller machine because this is the ScaleIO Gateway for API communication. MDM2 and TB are configured as Worker nodes with no management functionality.
 
 ##### Docker Swarm
 
@@ -119,6 +121,13 @@ For [Apache Mesos](http://mesos.apache.org/) and [Marathon by Mesosphere](https:
 $ curl -O https://raw.githubusercontent.com/codedellemc/labs/master/demo-persistence-with-postgres-marathon-docker/postgres.json
 $ curl -k -XPOST -d @postgres.json -H "Content-Type: application/json" http://192.168.50.12:8080/v2/apps
 ```
+
+##### Kubernetes
+
+ScaleIO has a native [Kubernetes](https://kubernetes.io/) integration. This means it doesn't rely on a tool like REX-Ray to function. Using standard Kubernetes Pods, Deployments/ReplicaSet, Dynamic Provision, etc is all built-in. On `MDM1` there is a folder called `k8examples` that can be used to create the secret, a standard pod, and deployment, storage class, and more.
+
+REX-Ray is installed on all nodes for ease of volume management. If storage classes and dynamic provisioning is not used, Kubernetes expects the volumes to be available. REX-Ray is an easy tool to quickly create the volumes like `sudo rexray create pgdata-k8-01 --size=16` that is needed by `deployment.yaml`.
+
 
 ### ScaleIO GUI
 
