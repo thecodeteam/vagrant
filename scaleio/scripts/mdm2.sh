@@ -64,6 +64,10 @@ do
     MESOSINSTALL="$2"
     shift
     ;;
+    -k8|--k8install)
+    K8INSTALL="$2"
+    shift
+    ;;
     *)
     # unknown option
     ;;
@@ -84,6 +88,7 @@ echo DOCKERINSTALL     = "${DOCKERINSTALL}"
 echo REXRAYINSTALL     = "${REXRAYINSTALL}"
 echo SWARMINSTALL     = "${SWARMINSTALL}"
 echo MESOSINSTALL     = "${MESOSINSTALL}"
+echo K8INSTALL     = "${K8INSTALL}"
 echo ZIP_OS    = "${ZIP_OS}"
 
 VERSION_MAJOR=`echo "${VERSION}" | awk -F \. {'print $1'}`
@@ -176,7 +181,11 @@ if [ "${MESOSINSTALL}" == "true" ]; then
   /vagrant/scripts/mesos-node.sh
 fi
 
+if [ "${K8INSTALL}" == "true" ]; then
+  /vagrant/scripts/k8/k8worker.sh
+fi
+
 if [[ -n $1 ]]; then
   echo "Last line of file specified as non-opt/last argument:"
-  tail -1 $1
+  #tail -1 $1
 fi
