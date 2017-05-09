@@ -189,6 +189,8 @@ if [ "${DOCKERINSTALL}" == "true" ]; then
   systemctl start docker
   echo "Setting Docker Permissions"
   usermod -aG docker vagrant
+  echo "Restarting Docker"
+  systemctl restart docker
 fi
 
 if [ "${REXRAYINSTALL}" == "true" ]; then
