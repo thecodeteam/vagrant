@@ -2,10 +2,10 @@
 # Many thanks to this post by James Carr: http://blog.james-carr.org/2013/03/17/dynamic-vagrant-nodes/
 
 # vagrant box
-vagrantbox="centos_7.1"
+vagrantbox="centos_7.3"
 
 # vagrant box url
-vagrantboxurl="https://github.com/CommanderK5/packer-centos-template/releases/download/0.7.1/vagrant-centos-7.1.box"
+vagrantboxurl="https://github.com/CommanderK5/packer-centos-template/releases/download/0.7.3/vagrant-centos-7.3.box"
 
 # scaleio admin password
 password="Scaleio123"
