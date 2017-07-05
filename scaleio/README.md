@@ -63,8 +63,8 @@ If set to `False`, three base VMs are installed with IM running on the machine n
 
 ```
 IPs,Password,Operating System,Is MDM/TB,Is SDS,SDS Device List,Is SDC
-192.168.50.12,vagrant,linux,Primary,Yes,/home/vagrant/scaleio1,Yes
-192.168.50.13,vagrant,linux,Secondary,Yes,/home/vagrant/scaleio1,Yes
+192.168.50.12,vagrant,linux,Master,Yes,/home/vagrant/scaleio1,Yes
+192.168.50.13,vagrant,linux,Slave,Yes,/home/vagrant/scaleio1,Yes
 192.168.50.11,vagrant,linux,TB,Yes,/home/vagrant/scaleio1,Yes
 ```
 
