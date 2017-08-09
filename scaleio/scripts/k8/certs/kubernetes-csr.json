@@ -1,0 +1,24 @@
+{
+  "CN": "kubernetes",
+  "hosts": [
+    "10.32.0.1",
+    "192.168.50.11",
+    "192.168.50.12",
+    "192.168.50.13",
+    "127.0.0.1",
+    "scaleio.local"
+  ],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "US",
+      "L": "SanFrancisco",
+      "O": "Kubernetes",
+      "OU": "Cluster",
+      "ST": "California"
+    }
+  ]
+}
