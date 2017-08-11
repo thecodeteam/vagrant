@@ -4,6 +4,8 @@ mkdir -p /var/lib/{kubelet,kube-proxy,kubernetes}
 mkdir -p /var/run/kubernetes
 echo "Moving Kubernetes Certificates"
 cp /home/vagrant/k8certs/ca.pem /var/lib/kubernetes/
+cp /home/vagrant/k8certs/kube-proxy.pem /var/lib/kubernetes/
+cp /home/vagrant/k8certs/kube-proxy-key.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/admin.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/admin-key.pem /var/lib/kubernetes/
 cp /home/vagrant/k8certs/bootstrap.kubeconfig /var/lib/kubelet
@@ -113,10 +115,10 @@ systemctl enable kube-proxy
 systemctl start kube-proxy
 systemctl status kube-proxy
 echo "Configuring Kubectl"
-kubectl config set-cluster k8-scaleio --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://${K8CONTROLLERIP}:6443
+kubectl config set-cluster scaleio-k8s --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://${K8CONTROLLERIP}:6443
 kubectl config set-credentials admin --client-certificate=/var/lib/kubernetes/admin.pem --client-key=/var/lib/kubernetes/admin-key.pem
-kubectl config set-context k8-scaleio --cluster=k8-scaleio --user=admin
-kubectl config use-context k8-scaleio
+kubectl config set-context scaleio-k8s --cluster=scaleio-k8s --user=admin
+kubectl config use-context scaleio-k8s
 HOSTNAME=$(hostname)
 if [ "$HOSTNAME" == "mdm2.scaleio.local" ]; then
   sleep 20s

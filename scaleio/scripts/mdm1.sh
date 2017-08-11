@@ -109,6 +109,10 @@ if [ "${INTERFACE_STATE}" == "down" ]; then
   ifup enp0s8
 fi
 
+echo "Adding Nodes to /etc/hosts"
+echo "192.168.50.11  tb.scaleio.local tb" >> /etc/hosts
+echo "192.168.50.13  mdm2.scaleio.local mdm2" >> /etc/hosts
+
 truncate -s 100GB ${DEVICE}
 yum install unzip numactl libaio rsync -y
 yum install java-1.8.0-openjdk -y

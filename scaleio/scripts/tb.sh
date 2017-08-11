@@ -110,6 +110,10 @@ if [ "${INTERFACE_STATE}" == "down" ]; then
   ifup enp0s8
 fi
 
+echo "Adding Nodes to /etc/hosts"
+echo "192.168.50.12  mdm1.scaleio.local mdm1" >> /etc/hosts
+echo "192.168.50.13  mdm2.scaleio.local mdm2" >> /etc/hosts
+
 truncate -s 100GB ${DEVICE}
 yum install unzip numactl libaio wget bc -y
 

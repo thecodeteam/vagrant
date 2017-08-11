@@ -1,0 +1,17 @@
+{
+  "CN": "system:kube-proxy",
+  "hosts": [],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "US",
+      "L": "SanFrancisco",
+      "O": "system:node-proxier",
+      "OU": "Cluster",
+      "ST": "California"
+    }
+  ]
+}
