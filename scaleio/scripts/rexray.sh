@@ -8,7 +8,7 @@ libstorage:
         mount:
           preempt: true
 scaleio:
-  endpoint: https://192.168.50.12/api
+  endpoint: https://192.168.50.11:8443/api
   insecure: true
   useCerts: true
   userName: admin
@@ -20,5 +20,6 @@ scaleio:
 EOF
 sed -i '/KillMode/a RestartSec=10' /etc/systemd/system/rexray.service
 sed -i '/KillMode/a Restart=always' /etc/systemd/system/rexray.service
-rexray start
+systemctl daemon-reload
+systemctl start rexray
 systemctl enable rexray

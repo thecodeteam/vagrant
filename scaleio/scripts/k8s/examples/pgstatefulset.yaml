@@ -41,7 +41,7 @@ spec:
       name: pgvolume
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: sio-small
+      storageClassName: standard
       resources:
         requests:
           storage: 16Gi

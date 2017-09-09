@@ -34,7 +34,7 @@ Set the following Environment Variables to `true` or `false` for your needs (mus
  - `SCALEIO_REXRAY_INSTALL` - Default is `true`.
  - `SCALEIO_SWARM_INSTALL` - Default is `false`. Set to `true` to automatically configure Docker Swarm.
  - `SCALEIO_MESOS_INSTALL` - Default is `false`. Set to `true` to automatically install Apache Mesos and Marathon.
- - `SCALEIO_K8_INSTALL` - Default is `false`. Set to `true` to automatically install Kubernetes.
+ - `SCALEIO_K8S_INSTALL` - Default is `false`. Set to `true` to automatically install Kubernetes.
  - `SCALEIO_RAM` - Default is `1024`. Depending on the docker images being used, RAM needs to be increased to 1.5GB or 2GB for MDM2 and TB. MDM1 will always use 3GB
  - `SCALEIO_VERIFY_FILES` - Default is `true`. This will verify the ScaleIO package is available for download.
 
@@ -124,9 +124,9 @@ $ curl -k -XPOST -d @postgres.json -H "Content-Type: application/json" http://19
 
 ##### Kubernetes
 
-ScaleIO has a native [Kubernetes](https://kubernetes.io/) integration. This means it doesn't rely on a tool like REX-Ray to function. Using standard Kubernetes Pods, Deployments/ReplicaSet, Dynamic Provision, etc is all built-in. On `MDM1` there is a folder called `k8examples` that can be used to create the secret, a standard pod, and deployment, storage class, and more.
+ScaleIO has a native [Kubernetes](https://kubernetes.io/) integration. This means it doesn't rely on a tool like REX-Ray to function. Using standard Kubernetes Pods, Deployments/ReplicaSet, Dynamic Provision, etc is all built-in. On `MDM1` there is a folder called `k8s-examples` that can be used to create the secret, a standard pod, and deployment, storage class, and more.
 
-REX-Ray is installed on all nodes for ease of volume management. If storage classes and dynamic provisioning is not used, Kubernetes expects the volumes to be available. REX-Ray is an easy tool to quickly create the volumes like `sudo rexray create pgdata-k8-01 --size=16` that is needed by `deployment.yaml`.
+REX-Ray is installed on all nodes for ease of volume management. If storage classes and dynamic provisioning is not used, Kubernetes expects the volumes to be available. REX-Ray is an easy tool to quickly create the volumes like `sudo rexray create pgdata-k8s-01 --size=16` that is needed by `deployment.yaml`.
 
 
 ### ScaleIO GUI

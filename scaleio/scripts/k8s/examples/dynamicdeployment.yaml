@@ -1,20 +1,20 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: postgres01
+  name: postgresdynamic
   labels:
-    app: postgres01
+    app: postgresdynamic
     role: master
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: postgres01
+        app: postgresdynamic
         role: master
     spec:
       containers:
-      - name: postgres01
+      - name: postgresdynamic
         image: postgres
         ports:
         - containerPort: 5432
@@ -22,15 +22,9 @@ spec:
         - name: POSTGRES_PASSWORD
           value: "Password123!"
         volumeMounts:
-        - name: pgvolume01
+        - name: postgres-data
           mountPath: /var/lib/postgresql/data
       volumes:
-      - name: pgvolume01
-        scaleIO:
-          gateway: https://192.168.50.12:443/api
-          volumeName: pgdata-k8-01
-          system: cluster1
-          protectionDomain: pdomain
-          storagePool: pool1
-          secretRef:
-            name: sio-secret
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: vol01

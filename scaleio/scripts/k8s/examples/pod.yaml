@@ -17,6 +17,6 @@ spec:
       protectionDomain: pdomain
       storagePool: pool1
       sslEnabled: false
-      volumeName: k8vol01
+      volumeName: k8s-vol01
       secretRef:
-        name: sio-secret
+        name: standard

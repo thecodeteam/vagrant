@@ -15,7 +15,7 @@ bash -c "echo 'docker,mesos' > /etc/mesos-slave/containerizers"
 bash -c "echo 'docker' > /etc/mesos-slave/image_providers"
 bash -c "echo 'filesystem/linux,docker/runtime' > /etc/mesos-slave/isolation"
 bash -c "echo '15mins' > /etc/mesos-slave/executor_registration_timeout"
-bash -c "echo zk://192.168.50.12:2181/mesos > /etc/mesos/zk"
+bash -c "echo zk://192.168.50.11:2181/mesos > /etc/mesos/zk"
 bash -c "echo $ENP0S8IP > /etc/mesos-slave/hostname"
 bash -c "echo $ENP0S8IP > /etc/mesos-slave/ip"
 systemctl enable mesos-slave

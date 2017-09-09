@@ -6,7 +6,10 @@
     "192.168.50.12",
     "192.168.50.13",
     "127.0.0.1",
-    "scaleio.local"
+    "scaleio.local",
+    "mdm1.scaleio.local",
+    "mdm2.scaleio.local",
+    "tb.scaleio.local"
   ],
   "key": {
     "algo": "rsa",

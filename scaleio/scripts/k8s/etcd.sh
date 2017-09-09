@@ -1,9 +1,9 @@
 #!/bin/bash
 echo "Installing etcd"
 mkdir -p /etc/etcd/
-cp /home/vagrant/k8certs/ca.pem /etc/etcd/
-cp /home/vagrant/k8certs/kubernetes-key.pem /etc/etcd/
-cp /home/vagrant/k8certs/kubernetes.pem /etc/etcd/
+cp /home/vagrant/k8s-certs/ca.pem /etc/etcd/
+cp /home/vagrant/k8s-certs/kubernetes-key.pem /etc/etcd/
+cp /home/vagrant/k8s-certs/kubernetes.pem /etc/etcd/
 FILESIZE=0
 until [ $FILESIZE -gt 1000000 ]; do
   wget -q https://github.com/coreos/etcd/releases/download/v3.1.4/etcd-v3.1.4-linux-amd64.tar.gz
@@ -18,29 +18,27 @@ sudo tar -xvf etcd-v3.1.4-linux-amd64.tar.gz
 mv etcd-v3.1.4-linux-amd64/etcd* /usr/bin/
 mkdir -p /var/lib/etcd
 echo "Creating Etcd Service"
-ENP0S8IP=$(ip -o -4 addr show enp0s8 | awk -F '[ /]+' '/global/ {print $4}')
+ETCD_IP=$(ip -o -4 addr show enp0s8 | awk -F '[ /]+' '/global/ {print $4}')
 cat << EOF > etcd.service
 [Unit]
 Description=etcd
 Documentation=https://github.com/coreos
 
 [Service]
-ExecStart=/usr/bin/etcd \\
-  --name mdm1 \\
+ExecStart=/usr/bin/etcd \
+  --name controller0 \\
   --cert-file=/etc/etcd/kubernetes.pem \\
   --key-file=/etc/etcd/kubernetes-key.pem \\
   --peer-cert-file=/etc/etcd/kubernetes.pem \\
   --peer-key-file=/etc/etcd/kubernetes-key.pem \\
   --trusted-ca-file=/etc/etcd/ca.pem \\
   --peer-trusted-ca-file=/etc/etcd/ca.pem \\
-  --peer-client-cert-auth \\
-  --client-cert-auth \\
-  --initial-advertise-peer-urls https://${ENP0S8IP}:2380 \\
-  --listen-peer-urls https://${ENP0S8IP}:2380 \\
-  --listen-client-urls https://${ENP0S8IP}:2379,http://127.0.0.1:2379 \\
-  --advertise-client-urls https://${ENP0S8IP}:2379 \\
+  --initial-advertise-peer-urls https://${ETCD_IP}:2380 \\
+  --listen-peer-urls https://${ETCD_IP}:2380 \\
+  --listen-client-urls https://${ETCD_IP}:2379,http://127.0.0.1:2379 \\
+  --advertise-client-urls https://${ETCD_IP}:2379 \\
   --initial-cluster-token etcd-cluster-0 \\
-  --initial-cluster mdm1=https://${ENP0S8IP}:2380 \\
+  --initial-cluster controller0=https://${ETCD_IP}:2380 \\
   --initial-cluster-state new \\
   --data-dir=/var/lib/etcd
 Restart=on-failure
@@ -48,6 +46,7 @@ RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
+
 EOF
 mv etcd.service /etc/systemd/system/
 echo "Starting Etcd Service"
