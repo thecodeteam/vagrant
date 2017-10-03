@@ -40,6 +40,10 @@ do
     TBIP="$2"
     shift
     ;;
+    -p|--password)
+    PASSWORD="$2"
+    shift
+    ;;
     -c|--clusterinstall)
     CLUSTERINSTALL="$2"
     shift
@@ -60,12 +64,8 @@ do
     MESOSINSTALL="$2"
     shift
     ;;
-    -vf|--verifyfiles)
-    VERIFYFILES="$2"
-    shift
-    ;;
-    -k8|--k8install)
-    K8INSTALL="$2"
+    -k8s|--k8sinstall)
+    K8SINSTALL="$2"
     shift
     ;;
     *)
@@ -82,13 +82,12 @@ echo PACKAGENAME    = "${PACKAGENAME}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
 echo TBIP    = "${TBIP}"
-echo CLUSTERINSTALL = "${CLUSTERINSTALL}"
+echo CLUSTERINSTALL     = "${CLUSTERINSTALL}"
 echo DOCKERINSTALL     = "${DOCKERINSTALL}"
 echo REXRAYINSTALL     = "${REXRAYINSTALL}"
 echo SWARMINSTALL     = "${SWARMINSTALL}"
 echo MESOSINSTALL     = "${MESOSINSTALL}"
-echo K8INSTALL     = "${K8INSTALL}"
-echo VERIFYFILES     = "${VERIFYFILES}"
+echo K8SINSTALL     = "${K8SINSTALL}"
 echo ZIP_OS    = "${ZIP_OS}"
 
 VERSION_MAJOR=`echo "${VERSION}" | awk -F \. {'print $1'}`
@@ -111,11 +110,13 @@ if [ "${INTERFACE_STATE}" == "down" ]; then
 fi
 
 echo "Adding Nodes to /etc/hosts"
-echo "192.168.50.12  mdm1.scaleio.local mdm1" >> /etc/hosts
-echo "192.168.50.13  mdm2.scaleio.local mdm2" >> /etc/hosts
+echo "192.168.50.11 masteer" >> /etc/hosts
+echo "192.168.50.12 node01" >> /etc/hosts
+echo "192.168.50.13 node02" >> /etc/hosts
 
 truncate -s 100GB ${DEVICE}
-yum install unzip numactl libaio wget bc -y
+yum install unzip numactl libaio rsync socat -y
+yum install java-1.8.0-openjdk -y
 
 if [ "${VERIFYFILES}" == "true" ]; then
 
@@ -161,10 +162,12 @@ then
   wget -nv http://downloads.emc.com/emc-com/usa/ScaleIO/ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip -O ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip
 fi
 
-echo "Uncompressing SIO package"
-unzip -n "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" -d /vagrant/scaleio/
 
-DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS | awk -F'/' '{print $1 "/" $2 "/" $3}' | head -1`
+cd /vagrant
+#echo "Uncompressing SIO package"
+#unzip -n "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" -d /vagrant/scaleio/
+
+DIR=`unzip -n -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS | awk -F'/' '{print $1 "/" $2 "/" $3}' | head -1`
 
 echo "Entering directory /vagrant/scaleio/$DIR"
 cd /vagrant/scaleio/$DIR
@@ -175,12 +178,34 @@ SDCRPM=`ls -1 | grep "\-sdc\-"`
 
 if [ "${CLUSTERINSTALL}" == "true" ]; then
   echo "Installing MDM $MDMRPM"
-  MDM_ROLE_IS_MANAGER=0 rpm -Uv $MDMRPM 2>/dev/null
+  MDM_ROLE_IS_MANAGER=1 rpm -Uv $MDMRPM 2>/dev/null
   echo "Installing SDS $SDSRPM"
   rpm -Uv $SDSRPM 2>/dev/null
   echo "Installing SDC $SDCRPM"
   MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv $SDCRPM 2>/dev/null
 fi
+
+# Always install ScaleIO Gateway
+#cd /vagrant
+#DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep Gateway_for_Linux | awk -F'/' '{print $1 "/" $2 "/" $3}' | head -1`
+#cd /vagrant/scaleio/$DIR
+#echo "Installing GATEWAY $GWRPM"
+#GWRPM=`ls -1 | grep x86_64`
+#GATEWAY_ADMIN_PASSWORD=${PASSWORD} rpm -Uv $GWRPM --nodeps 2>/dev/null
+#
+#sed -i 's/security.bypass_certificate_check=false/security.bypass_certificate_check=true/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
+#sed -i 's/mdm.ip.addresses=/mdm.ip.addresses='${FIRSTMDMIP}','${SECONDMDMIP}'/' /opt/emc/scaleio/gateway/webapps/ROOT/WEB-INF/classes/gatewayUser.properties
+#service scaleio-gateway start
+#service scaleio-gateway restart
+
+# Copy the ScaleIO GUI application to the /vagrant directory for easy access
+cd /vagrant
+DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep GUI_for_Linux | awk -F'/' '{print $1 "/" $2 "/" $3}' | head -1`
+cd /vagrant/scaleio/$DIR
+GUIRPM=`ls -1 | grep rpm`
+rpm2cpio $GUIRPM | cpio -idmv
+rsync -qa opt/emc/scaleio/gui /vagrant
+rm -fr opt/
 
 if [ "${DOCKERINSTALL}" == "true" ]; then
   echo "Installing Docker"
@@ -195,6 +220,7 @@ if [ "${DOCKERINSTALL}" == "true" ]; then
   usermod -aG docker vagrant
   echo "Restarting Docker"
   systemctl restart docker
+  docker run -d --name=scaleio-gw --restart=always -p 8443:443 -e GW_PASSWORD=${PASSWORD} -e MDM1_IP_ADDRESS=${FIRSTMDMIP} -e MDM2_IP_ADDRESS=${SECONDMDMIP} -e TRUST_MDM_CRT=true vchrisb/scaleio-gw:v2.0.1.2
 fi
 
 if [ "${REXRAYINSTALL}" == "true" ]; then
@@ -203,18 +229,19 @@ if [ "${REXRAYINSTALL}" == "true" ]; then
 fi
 
 if [ "${SWARMINSTALL}" == "true" ]; then
-  echo "Configuring Host as Docker Swarm Manager - will be demoted to Worker later by MDM1"
-  docker swarm init --listen-addr ${TBIP} --advertise-addr ${TBIP}
-  docker swarm join-token -q worker > /vagrant/swarm_worker_token
-  docker swarm join-token -q manager > /vagrant/swarm_manager_token
+  echo "Configuring Host as Docker Swarm Manager and then demoting TB to a Swarm Worker"
+  MANAGER_TOKEN=`cat /vagrant/swarm_manager_token`
+	docker swarm join --listen-addr ${FIRSTMDMIP} --advertise-addr ${FIRSTMDMIP} --token=$MANAGER_TOKEN ${TBIP}
+  docker node demote tb.scaleio.local
 fi
 
 if [ "${MESOSINSTALL}" == "true" ]; then
-  /vagrant/scripts/mesos-node.sh
+  /vagrant/scripts/mesos-master.sh
 fi
 
-if [ "${K8INSTALL}" == "true" ]; then
-  /vagrant/scripts/k8/k8worker.sh
+if [ "${K8SINSTALL}" == "true" ]; then
+  /vagrant/scripts/k8s/etcd.sh
+  /vagrant/scripts/k8s/k8s-controller.sh
 fi
 
 if [[ -n $1 ]]; then

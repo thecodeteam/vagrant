@@ -13,15 +13,15 @@ password="Scaleio123"
 domain = 'scaleio.local'
 
 # add your nodes here
-nodes = ['tb', 'mdm1', 'mdm2']
+nodes = ['master', 'node01','node02']
 
 # add your IPs here
 network = "192.168.50"
 
 clusterip = "#{network}.10"
-tbip = "#{network}.11"
-firstmdmip = "#{network}.12"
-secondmdmip = "#{network}.13"
+firstmdmip = "#{network}.11"
+secondmdmip = "#{network}.12"
+tbip = "#{network}.13"
 
 # Install ScaleIO cluster automatically or IM only
 #If True a fully working ScaleIO cluster is installed. False mean only IM is installed on node MDM1.
@@ -59,12 +59,12 @@ else
   mesosinstall = "false"
 end
 
-# Install and Configure Mesos Automatically
-if ENV['SCALEIO_K8_INSTALL']
-  k8install = ENV['SCALEIO_K8_INSTALL'].to_s.downcase
+# Install and Configure Kubernetes Automatically
+if ENV['SCALEIO_K8S_INSTALL']
+  k8sinstall = ENV['SCALEIO_K8S_INSTALL'].to_s.downcase
   dockerinstall = "false"
 else
-  k8install = "false"
+  k8sinstall = "false"
 end
 
 # In some cases more memory is needed for applications.
@@ -130,7 +130,7 @@ Vagrant.configure("2") do |config|
         vb.customize ["modifyvm", :id, "--memory", vmram]
       end
 
-      if node[:hostname] == "mdm1"
+      if node[:hostname] == "master"
         node_config.vm.provider :virtualbox do |vb|
           vb.customize ["modifyvm", :id, "--memory", "3072"]
         end
@@ -138,42 +138,43 @@ Vagrant.configure("2") do |config|
         node_config.vm.network "private_network", ip: "#{firstmdmip}"
         # node_config.vm.network "forwarded_port", guest: 6611, host: 6611
 
-        # adding certificates needed for k8 installation
-        if k8install == "true"
-          node_config.vm.provision "file", source: "scripts/k8/certs", destination: "/home/vagrant/k8certs"
-          node_config.vm.provision "file", source: "scripts/k8/examples", destination: "/home/vagrant/k8examples"
+        # adding certificates needed for k8s installation
+        if k8sinstall == "true"
+          node_config.vm.provision "file", source: "scripts/k8s/certs", destination: "/home/vagrant/k8s-certs"
+          node_config.vm.provision "file", source: "scripts/k8s/examples", destination: "/home/vagrant/k8s-examples"
         end
 
         node_config.vm.provision "shell" do |s|
-          s.path = "scripts/mdm1.sh"
-          s.args = "-o #{os} -zo #{zip_os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -tb #{tbip} -i #{siinstall} -p #{password} -c #{clusterinstall} -dk #{dockerinstall} -r #{rexrayinstall} -ds #{swarminstall} -ms #{mesosinstall} -k8 #{k8install}"
+          s.path = "scripts/master.sh"
+          s.args = "-o #{os} -zo #{zip_os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -tb #{tbip} -i #{siinstall} -p #{password} -c #{clusterinstall} -dk #{dockerinstall} -r #{rexrayinstall} -ds #{swarminstall} -ms #{mesosinstall} -k8s #{k8sinstall}"
         end
       end
 
-      if node[:hostname] == "tb"
-        node_config.vm.network "private_network", ip: "#{tbip}"
-        # adding certificates needed for k8 installation
-        if k8install == "true"
-          node_config.vm.provision "file", source: "scripts/k8/certs", destination: "/home/vagrant/k8certs"
-        end
-
-        node_config.vm.provision "shell" do |s|
-          s.path = "scripts/tb.sh"
-          s.args = "-o #{os} -zo #{zip_os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -tb #{tbip} -i #{siinstall} -c #{clusterinstall} -dk #{dockerinstall} -r #{rexrayinstall} -ds #{swarminstall} -ms #{mesosinstall} -vf #{verifyfiles} -k8 #{k8install}"
-        end
-      end
-
-      if node[:hostname] == "mdm2"
+      if node[:hostname] == "node01"
         node_config.vm.network "private_network", ip: "#{secondmdmip}"
-        # adding certificates needed for k8 installation
-        if k8install == "true"
-          node_config.vm.provision "file", source: "scripts/k8/certs", destination: "/home/vagrant/k8certs"
+        # adding certificates needed for k8s installation
+        if k8sinstall == "true"
+          node_config.vm.provision "file", source: "scripts/k8s/certs", destination: "/home/vagrant/k8s-certs"
         end
         node_config.vm.provision "shell" do |s|
-          s.path = "scripts/mdm2.sh"
-          s.args = "-o #{os} -zo #{zip_os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -tb #{tbip} -i #{siinstall} -p #{password} -c #{clusterinstall} -dk #{dockerinstall} -r #{rexrayinstall} -ds #{swarminstall} -ms #{mesosinstall} -k8 #{k8install}"
+          s.path = "scripts/node01.sh"
+          s.args = "-o #{os} -zo #{zip_os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -tb #{tbip} -i #{siinstall} -c #{clusterinstall} -dk #{dockerinstall} -r #{rexrayinstall} -ds #{swarminstall} -ms #{mesosinstall} -k8s #{k8sinstall}"
         end
       end
+
+      if node[:hostname] == "node02"
+        node_config.vm.network "private_network", ip: "#{tbip}"
+        # adding certificates needed for k8s installation
+        if k8sinstall == "true"
+          node_config.vm.provision "file", source: "scripts/k8s/certs", destination: "/home/vagrant/k8s-certs"
+        end
+
+        node_config.vm.provision "shell" do |s|
+          s.path = "scripts/node02.sh"
+          s.args = "-o #{os} -zo #{zip_os} -v #{version} -n #{packagename} -d #{device} -f #{firstmdmip} -s #{secondmdmip} -tb #{tbip} -i #{siinstall} -p #{password} -c #{clusterinstall} -dk #{dockerinstall} -r #{rexrayinstall} -ds #{swarminstall} -ms #{mesosinstall} -vf #{verifyfiles} -k8s #{k8sinstall}"
+        end
+      end
+
     end
   end
 end

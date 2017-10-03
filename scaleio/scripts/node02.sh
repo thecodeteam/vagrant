@@ -64,8 +64,12 @@ do
     MESOSINSTALL="$2"
     shift
     ;;
-    -k8|--k8install)
-    K8INSTALL="$2"
+    -vf|--verifyfiles)
+    VERIFYFILES="$2"
+    shift
+    ;;
+    -k8s|--k8sinstall)
+    K8SINSTALL="$2"
     shift
     ;;
     *)
@@ -82,13 +86,13 @@ echo PACKAGENAME    = "${PACKAGENAME}"
 echo FIRSTMDMIP    = "${FIRSTMDMIP}"
 echo SECONDMDMIP    = "${SECONDMDMIP}"
 echo TBIP    = "${TBIP}"
-echo PASSWORD    = "${PASSWORD}"
-echo CLUSTERINSTALL   =  "${CLUSTERINSTALL}"
+echo CLUSTERINSTALL = "${CLUSTERINSTALL}"
 echo DOCKERINSTALL     = "${DOCKERINSTALL}"
 echo REXRAYINSTALL     = "${REXRAYINSTALL}"
 echo SWARMINSTALL     = "${SWARMINSTALL}"
 echo MESOSINSTALL     = "${MESOSINSTALL}"
-echo K8INSTALL     = "${K8INSTALL}"
+echo K8SINSTALL     = "${K8SINSTALL}"
+echo VERIFYFILES     = "${VERIFYFILES}"
 echo ZIP_OS    = "${ZIP_OS}"
 
 VERSION_MAJOR=`echo "${VERSION}" | awk -F \. {'print $1'}`
@@ -111,15 +115,16 @@ if [ "${INTERFACE_STATE}" == "down" ]; then
 fi
 
 echo "Adding Nodes to /etc/hosts"
-echo "192.168.50.12  mdm1.scaleio.local mdm1" >> /etc/hosts
-echo "192.168.50.11  tb.scaleio.local tb" >> /etc/hosts
+echo "192.168.50.11 masteer" >> /etc/hosts
+echo "192.168.50.12 node01" >> /etc/hosts
+echo "192.168.50.13 node02" >> /etc/hosts
 
-#echo "Number files in SEARCH PATH with EXTENSION:" $(ls -1 "${SEARCHPATH}"/*."${EXTENSION}" | wc -l)
 truncate -s 100GB ${DEVICE}
-yum install unzip numactl libaio -y
+yum install unzip numactl libaio wget bc socat -y
 
 cd /vagrant
-DIR=`unzip -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS | awk -F'/' '{print $1 "/" $2 "/" $3}' | head -1`
+
+DIR=`unzip -n -l "ScaleIO_Linux_v"$VERSION_MAJOR_MINOR".zip" | awk '{print $4}' | grep $ZIP_OS | awk -F'/' '{print $1 "/" $2 "/" $3}' | head -1`
 
 echo "Entering directory /vagrant/scaleio/$DIR"
 cd /vagrant/scaleio/$DIR
@@ -130,13 +135,12 @@ SDCRPM=`ls -1 | grep "\-sdc\-"`
 
 if [ "${CLUSTERINSTALL}" == "true" ]; then
   echo "Installing MDM $MDMRPM"
-  MDM_ROLE_IS_MANAGER=1 rpm -Uv $MDMRPM 2>/dev/null
+  MDM_ROLE_IS_MANAGER=0 rpm -Uv $MDMRPM 2>/dev/null
   echo "Installing SDS $SDSRPM"
   rpm -Uv $SDSRPM 2>/dev/null
-  echo "Installing SDC $SDCRPM"
-  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv $SDCRPM 2>/dev/null
 
   scli --mdm_ip ${FIRSTMDMIP} --create_mdm_cluster --master_mdm_ip ${FIRSTMDMIP} --master_mdm_management_ip ${FIRSTMDMIP} --master_mdm_name mdm1 --accept_license --approve_certificate
+  sleep 10
   scli --mdm_ip ${FIRSTMDMIP} --login --username admin --password admin --approve_certificate
   while [ $? -ne 0 ] ; do echo "Trying to login again.."; scli --mdm_ip ${FIRSTMDMIP} --login --username admin --password admin --approve_certificate ; done
   scli --mdm_ip ${FIRSTMDMIP} --set_password --old_password admin --new_password ${PASSWORD} --approve_certificate
@@ -150,11 +154,9 @@ if [ "${CLUSTERINSTALL}" == "true" ]; then
   scli --mdm_ip ${FIRSTMDMIP} --add_sds --sds_ip ${FIRSTMDMIP} --device_path ${DEVICE} --no_test --sds_name sds1 --protection_domain_name pdomain --storage_pool_name pool1
   scli --mdm_ip ${FIRSTMDMIP} --add_sds --sds_ip ${SECONDMDMIP} --device_path ${DEVICE} --no_test --sds_name sds2 --protection_domain_name pdomain --storage_pool_name pool1
   scli --mdm_ip ${FIRSTMDMIP} --add_sds --sds_ip ${TBIP} --device_path ${DEVICE} --no_test --sds_name sds3 --protection_domain_name pdomain --storage_pool_name pool1
-  scli --mdm_ip ${FIRSTMDMIP} --add_volume --size_gb 8 --volume_name vol1 --protection_domain_name pdomain --storage_pool_name pool1
-  while [ $? -ne 0 ] ; do echo "Trying to add volume again.."; sleep 1; scli --mdm_ip ${FIRSTMDMIP} --add_volume --size_gb 8 --volume_name vol1 --protection_domain_name pdomain --storage_pool_name pool1 ; done
-  scli --mdm_ip ${FIRSTMDMIP} --map_volume_to_sdc --volume_name vol1 --sdc_ip ${FIRSTMDMIP} --allow_multi_map
-  scli --mdm_ip ${FIRSTMDMIP} --map_volume_to_sdc --volume_name vol1 --sdc_ip ${SECONDMDMIP} --allow_multi_map
-  scli --mdm_ip ${FIRSTMDMIP} --map_volume_to_sdc --volume_name vol1 --sdc_ip ${TBIP} --allow_multi_map
+  sleep 5
+  echo "Installing SDC $SDCRPM"
+  MDM_IP=${FIRSTMDMIP},${SECONDMDMIP} rpm -Uv $SDCRPM 2>/dev/null
 fi
 
 if [ "${DOCKERINSTALL}" == "true" ]; then
@@ -178,17 +180,18 @@ if [ "${REXRAYINSTALL}" == "true" ]; then
 fi
 
 if [ "${SWARMINSTALL}" == "true" ]; then
-  echo "Configuring Host as Docker Swarm Worker"
-  WORKER_TOKEN=`cat /vagrant/swarm_worker_token`
-	docker swarm join --listen-addr ${SECONDMDMIP} --advertise-addr ${SECONDMDMIP} --token=$WORKER_TOKEN ${FIRSTMDMIP}
+  echo "Configuring Host as Docker Swarm Manager - will be demoted to Worker later by MDM1"
+  docker swarm init --listen-addr ${TBIP} --advertise-addr ${TBIP}
+  docker swarm join-token -q worker > /vagrant/swarm_worker_token
+  docker swarm join-token -q manager > /vagrant/swarm_manager_token
 fi
 
 if [ "${MESOSINSTALL}" == "true" ]; then
   /vagrant/scripts/mesos-node.sh
 fi
 
-if [ "${K8INSTALL}" == "true" ]; then
-  /vagrant/scripts/k8/k8worker.sh
+if [ "${K8SINSTALL}" == "true" ]; then
+  /vagrant/scripts/k8s/k8s-node.sh
 fi
 
 if [[ -n $1 ]]; then

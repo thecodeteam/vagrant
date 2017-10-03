@@ -42,7 +42,7 @@ spec:
       name: www
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: sio-small
+      storageClassName: standard
       resources:
         requests:
           storage: 8Gi

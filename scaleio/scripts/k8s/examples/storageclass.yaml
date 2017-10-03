@@ -1,12 +1,11 @@
 kind: StorageClass
-apiVersion: storage.k8s.io/v1beta1
+apiVersion: storage.k8s.io/v1
 metadata:
-  name: sio-small
+  name: standard 
 provisioner: kubernetes.io/scaleio
 parameters:
-  gateway: https://192.168.50.12:443/api
+  gateway: https://192.168.50.11:8443/api
   system: cluster1
   protectionDomain: pdomain
   storagePool: pool1
-  readOnly: "false"
-  secretRef: sio-secret
+  secretRef: scaleio-secret

@@ -1,9 +1,9 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: pvc-sio-small
+  name: vol01
   annotations:
-      volume.beta.kubernetes.io/storage-class: sio-small
+      volume.beta.kubernetes.io/storage-class: standard
 spec:
   accessModes:
     - ReadWriteOnce
