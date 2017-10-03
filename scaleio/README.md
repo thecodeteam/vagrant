@@ -7,7 +7,7 @@ Automatically deploy ScaleIO in an isolated environment on top of VirtualBox.
 
 Environment Details:
 
-- Three CentOS 7.1 nodes
+- Three CentOS 7.3 nodes
 - Each node gets installed with the latest the ScaleIO software
 - Configuration happens automatically to have a fully redundant ScaleIO cluster.
 
@@ -35,7 +35,7 @@ Set the following Environment Variables to `true` or `false` for your needs (mus
  - `SCALEIO_SWARM_INSTALL` - Default is `false`. Set to `true` to automatically configure Docker Swarm.
  - `SCALEIO_MESOS_INSTALL` - Default is `false`. Set to `true` to automatically install Apache Mesos and Marathon.
  - `SCALEIO_K8S_INSTALL` - Default is `false`. Set to `true` to automatically install Kubernetes.
- - `SCALEIO_RAM` - Default is `1024`. Depending on the docker images being used, RAM needs to be increased to 1.5GB or 2GB for MDM2 and TB. MDM1 will always use 3GB
+ - `SCALEIO_RAM` - Default is `1024`. Depending on the docker images being used, RAM needs to be increased to 1.5GB or 2GB for node01 and node02. Master will always use 3GB
  - `SCALEIO_VERIFY_FILES` - Default is `true`. This will verify the ScaleIO package is available for download.
 
 1. `git clone https://github.com/codedellemc/vagrant.git`
@@ -47,7 +47,7 @@ Note, the cluster will come up with the default unlimited license for dev and te
 
 ### SSH
 
-To login to the ScaleIO nodes, use the following commands: `vagrant ssh mdm1`, `vagrant ssh mdm2`, or `vagrant ssh tb`.
+To login to the ScaleIO nodes, use the following commands: `vagrant ssh master`, `vagrant ssh node01`, or `vagrant ssh node02`.
 
 ### Cluster install function
 
@@ -70,7 +70,7 @@ IPs,Password,Operating System,Is MDM/TB,Is SDS,SDS Device List,Is SDC
 
 ### Docker and REX-Ray
 
-Docker and REX-Ray will automatically be installed on all three nodes but can be overridden using the Environment Variables above. Each will configure REX-Ray to use libStorage to manage ScaleIO volumes for persistent applications in containers.
+Docker and REX-Ray will automatically be installed on all three nodes but can be overridden using the Environment Variables above. Each will configure REX-Ray to manage ScaleIO volumes for persistent applications in containers.
 
 To run a container with persistent data stored on ScaleIO, from any of the cluster nodes you can run the following examples:
 
@@ -97,11 +97,13 @@ Since the nodes all have access to the ScaleIO environment, fail over services w
 
 ### Docker Swarm, Apache Mesos, and Kubernetes
 
-In each configuration, MDM1 is the Master/Manager/Controller machine because this is the ScaleIO Gateway for API communication. MDM2 and TB are configured as Worker nodes with no management functionality.
+In each configuration, `master` machine takes care of management roles because this is the ScaleIO Gateway for API communication. `node01` and `node02` are configured as Worker nodes with no management functionality.
 
 ##### Docker Swarm
 
-The `docker service` command is used to create a service that is scheduled on nodes and can be rescheduled on a node failure. As a quick demonstration go to MDM1 and run a postgres service and pin it to the worker nodes:
+Automatically build a Swarm cluster with `export SCALEIO_SWARM_INSTALL=true` as an environment variable.
+
+The `docker service` command is used to create a service that is scheduled on nodes and can be rescheduled on a node failure. As a quick demonstration go to `master` and run a postgres service and pin it to the worker nodes:
 
 ```
 $ docker service create --replicas 1 --name pg -e POSTGRES_PASSWORD=mysecretpassword \
@@ -109,13 +111,15 @@ $ docker service create --replicas 1 --name pg -e POSTGRES_PASSWORD=mysecretpass
 --constraint 'node.role == worker' postgres
 ```
 
-Use `docker service ps pg` to see which node it was scheduled on. Go to that node and stop the docker service with `sudo systemctl stop docker`. On MDM1, a `docker service ps pg` will show the container being rescheduled on a different worker.
+Use `docker service ps pg` to see which node it was scheduled on. Go to that node and stop the docker service with `sudo systemctl stop docker`. On master, a `docker service ps pg` will show the container being rescheduled on a different worker.
 
 If it doesn't work, restart the service on the node, go to the other and download the image using `docker pull postgres` and start again.
 
 ##### Apache Mesos with Marathon
 
-For [Apache Mesos](http://mesos.apache.org/) and [Marathon by Mesosphere](https://github.com/mesosphere/marathon)  instructions for deploying containers, visit the [{code} Labs](https://github.com/codedellemc/labs) and try [Storage Persistence with Postgres using Mesos, Marathon, Docker, and REX-Ray](Storage Persistence with Postgres using Mesos, Marathon, Docker, and REX-Ray). Mesos and Marathon Web GUIs will be accessible from `http://192.168.50.12:5050` and `http://192.168.50.12:8080`.
+Automatically build a Mesos with Marathon cluster using `export SCALEIO_MESOS_INSTALL=true` as an environment variable.
+
+For [Apache Mesos](http://mesos.apache.org/) and [Marathon by Mesosphere](https://github.com/mesosphere/marathon)  instructions for deploying containers, visit the [{code} Labs](https://github.com/codedellemc/labs) and try [Storage Persistence with Postgres using Mesos, Marathon, Docker, and REX-Ray](Storage Persistence with Postgres using Mesos, Marathon, Docker, and REX-Ray). Mesos and Marathon Web GUIs will be accessible from `http://192.168.50.11:5050` and `http://192.168.50.11:8080`.
 
 ```
 $ curl -O https://raw.githubusercontent.com/codedellemc/labs/master/demo-persistence-with-postgres-marathon-docker/postgres.json
@@ -124,7 +128,9 @@ $ curl -k -XPOST -d @postgres.json -H "Content-Type: application/json" http://19
 
 ##### Kubernetes
 
-ScaleIO has a native [Kubernetes](https://kubernetes.io/) integration. This means it doesn't rely on a tool like REX-Ray to function. Using standard Kubernetes Pods, Deployments/ReplicaSet, Dynamic Provision, etc is all built-in. On `MDM1` there is a folder called `k8s-examples` that can be used to create the secret, a standard pod, and deployment, storage class, and more.
+Automatically build a Kubernetes cluster using `export SCALEIO_K8S_INSTALL=true` as an environment variable.
+
+ScaleIO has a native [Kubernetes](https://kubernetes.io/) integration. This means it doesn't rely on a tool like REX-Ray to function. Using standard Kubernetes Pods, Deployments/ReplicaSet, Dynamic Provision, etc is all built-in. On `master` node there is a folder called `k8s-examples` that can be used to create the secret, a standard pod, and deployment, storage class, and more.
 
 REX-Ray is installed on all nodes for ease of volume management. If storage classes and dynamic provisioning is not used, Kubernetes expects the volumes to be available. REX-Ray is an easy tool to quickly create the volumes like `sudo rexray create pgdata-k8s-01 --size=16` that is needed by `deployment.yaml`.
 
