@@ -115,7 +115,7 @@ if [ "${INTERFACE_STATE}" == "down" ]; then
 fi
 
 echo "Adding Nodes to /etc/hosts"
-echo "192.168.50.11 masteer" >> /etc/hosts
+echo "192.168.50.11 master" >> /etc/hosts
 echo "192.168.50.12 node01" >> /etc/hosts
 echo "192.168.50.13 node02" >> /etc/hosts
 
@@ -180,10 +180,13 @@ if [ "${REXRAYINSTALL}" == "true" ]; then
 fi
 
 if [ "${SWARMINSTALL}" == "true" ]; then
-  echo "Configuring Host as Docker Swarm Manager - will be demoted to Worker later by MDM1"
-  docker swarm init --listen-addr ${TBIP} --advertise-addr ${TBIP}
-  docker swarm join-token -q worker > /vagrant/swarm_worker_token
-  docker swarm join-token -q manager > /vagrant/swarm_manager_token
+  echo "Configuring Host as Docker Swarm Worker"
+  WORKER_TOKEN=`cat /vagrant/swarm_worker_token`
+	docker swarm join --listen-addr ${TBIP} --advertise-addr ${TBIP} --token=$WORKER_TOKEN ${FIRSTMDMIP}
+  #echo "Configuring Host as Docker Swarm Manager - will be demoted to Worker later by master"
+  #docker swarm init --listen-addr ${TBIP} --advertise-addr ${TBIP}
+  #docker swarm join-token -q worker > /vagrant/swarm_worker_token
+  #docker swarm join-token -q manager > /vagrant/swarm_manager_token
 fi
 
 if [ "${MESOSINSTALL}" == "true" ]; then
