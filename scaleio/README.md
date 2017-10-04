@@ -76,7 +76,7 @@ To run a container with persistent data stored on ScaleIO, from any of the clust
 
 Run Busybox with a volume mounted at `/data`:
 ```
-docker -it --volume-driver=rexray -v data:/data busybox
+docker run -it --volume-driver=rexray -v data:/data busybox
 ```
 
 Run Redis with a volume mounted at `/data`:
