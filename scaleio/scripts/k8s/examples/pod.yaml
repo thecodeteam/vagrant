@@ -17,6 +17,6 @@ spec:
       protectionDomain: pdomain
       storagePool: pool1
       sslEnabled: false
-      volumeName: k8s-vol01
+      volumeName: k8svol-updatethisid
       secretRef:
         name: scaleio-secret
