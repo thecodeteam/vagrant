@@ -12,11 +12,11 @@ spec:
   volumes:
   - name: vol0
     scaleIO:
-      gateway: https://192.168.50.12:443/api
+      gateway: https://192.168.50.11:8443/api
       system: cluster1
       protectionDomain: pdomain
       storagePool: pool1
       sslEnabled: false
       volumeName: k8s-vol01
       secretRef:
-        name: standard
+        name: scaleio-secret
