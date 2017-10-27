@@ -3,7 +3,7 @@ vagrant-scaleio
 
 # Description
 
-Automatically deploy ScaleIO in an isolated environment on top of VirtualBox.
+Automatically deploy ScaleIO in an isolated environment on top of VirtualBox to test containers with persistent applications.
 
 Environment Details:
 
