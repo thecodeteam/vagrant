@@ -1,6 +1,9 @@
 # Vagrant
 This repository includes all projects related to working with Vagrant.
 
+Main Project:
+ - [scaleio](/scaleio) - Deploy a three node ScaleIO cluster and choose to install Docker, REX-Ray, Kubernetes or Mesos with Marathon for testing persistent applications in an isolated environment.
+
 Description for different projects:
 
  - [ceph](/ceph) - Use VirtualBox and Virtual Media as storage for Ceph to be used by Docker and REX-Ray
@@ -9,7 +12,6 @@ Description for different projects:
  that runs Diego cells on top of Mesos
  - [puppet-scaleio](/puppet-scaleio) - Deploy ScaleIO using a Puppet Module
  - [rexray](/rexray) - Deploy a simple 2 Node VirtualBox environment for testing REX-Ray with Virtual Media
- - [scaleio](/scaleio) - Deploy a three node ScaleIO cluster and choose to install Docker, REX-Ray, and Mesos with Marathon for testing persistent applications in an isolated environment.
 
 # Contribution Rules
 
