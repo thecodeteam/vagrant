@@ -42,15 +42,15 @@ echo "Installing ScaleIO Gateway"
 docker run -d --name=scaleio-gw --restart=always -p 8443:443 -e GW_PASSWORD=Scaleio123 -e MDM1_IP_ADDRESS=192.168.50.11 -e MDM2_IP_ADDRESS=192.168.50.12 -e TRUST_MDM_CRT=true vchrisb/scaleio-gw:v2.0.1.2
 
 echo "Downloading kube-apiserver"
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.7.5/bin/linux/amd64/kube-apiserver
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.8.4/bin/linux/amd64/kube-apiserver
 echo "Downloading kube-controller-manager"
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.7.5/bin/linux/amd64/kube-controller-manager
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.8.4/bin/linux/amd64/kube-controller-manager
 echo "Downloading kube-scheduler"
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.7.5/bin/linux/amd64/kube-scheduler
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.8.4/bin/linux/amd64/kube-scheduler
 echo "Downloading kubectl"
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.7.5/bin/linux/amd64/kubectl
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.8.4/bin/linux/amd64/kubectl
 echo "Downloading kube-proxy"
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.7.5/bin/linux/amd64/kube-proxy
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.8.4/bin/linux/amd64/kube-proxy
 echo "Setting Permissions and Moving Executables"
 chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl kube-proxy
 mv kube-apiserver kube-controller-manager kube-scheduler kubectl kube-proxy /usr/bin/
