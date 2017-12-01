@@ -130,9 +130,20 @@ $ curl -k -XPOST -d @postgres.json -H "Content-Type: application/json" http://19
 
 Automatically build a Kubernetes cluster using `export SCALEIO_K8S_INSTALL=true` as an environment variable.
 
-ScaleIO has a native [Kubernetes](https://kubernetes.io/) integration. This means it doesn't rely on a tool like REX-Ray to function. Using standard Kubernetes Pods, Deployments/ReplicaSet, Dynamic Provision, etc is all built-in. On `master` node there is a folder called `k8s-examples` that can be used to create the secret, a standard pod, and deployment, storage class, and more.
+ScaleIO has a native [Kubernetes](https://kubernetes.io/) integration. This means it doesn't rely on a tool like REX-Ray to function. Using standard Kubernetes Pods, Deployments/ReplicaSet, Dynamic Provision, etc is all built-in. On `master` node there is a folder called `k8s-examples` that can be used to create the namespace, secret, a standard pod, and deployment, storage class, and more.
 
 REX-Ray is installed on all nodes for ease of volume management. If storage classes and dynamic provisioning is not used, Kubernetes expects the volumes to be available. REX-Ray is an easy tool to quickly create the volumes like `sudo rexray create pgdata-k8s-01 --size=16` that is needed by `deployment.yaml`.
+
+As an example:
+```
+vagrant ssh master
+cd k8s_examples
+kubectl create -f namespace.yaml
+kubectl create -f secret.yaml
+kubectl create -f storageclass.yaml
+kubectl create -f dynamicdeployment.yaml
+kubectl create -f pgstatefulset.yaml
+```
 
 
 ### ScaleIO GUI
