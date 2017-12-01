@@ -45,11 +45,11 @@ mkdir -p /opt/cni
 curl -s -O https://storage.googleapis.com/kubernetes-release/network-plugins/cni-amd64-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz
 sudo tar -xvf cni-amd64-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz -C /opt/cni
 echo "Downloading kubectl"
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.7.5/bin/linux/amd64/kubectl
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.8.4/bin/linux/amd64/kubectl
 echo "Downloading kubelet"
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.7.5/bin/linux/amd64/kubelet
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.8.4/bin/linux/amd64/kubelet
 echo "Downloading kube-proxy"
-curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.7.5/bin/linux/amd64/kube-proxy
+curl -s -O https://storage.googleapis.com/kubernetes-release/release/v1.8.4/bin/linux/amd64/kube-proxy
 chmod +x kubectl kubelet kube-proxy
 mv kubectl kubelet kube-proxy /usr/bin/
 echo "Creating Kubelet Service"
@@ -74,7 +74,8 @@ ExecStart=/usr/bin/kubelet \\
   --tls-cert-file=/var/lib/kubernetes/kubernetes.pem \\
   --tls-private-key-file=/var/lib/kubernetes/kubernetes-key.pem \\
   --v=2 \\
-  --enable-controller-attach-detach=false
+  --enable-controller-attach-detach=false \\
+  --fail-swap-on=false
 
 Restart=on-failure
 RestartSec=5
