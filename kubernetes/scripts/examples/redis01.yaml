@@ -1,0 +1,32 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis01
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis01
+        image: redis
+        ports:
+        - containerPort: 6379
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      securityContext:
+        runAsUser: 0
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: vol01
