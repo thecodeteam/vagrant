@@ -1,0 +1,30 @@
+kind: DaemonSet
+apiVersion: apps/v1beta2
+metadata:
+  name: simple
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+    spec:
+      hostNetwork: true
+      containers:
+        - name: simple
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+            allowPrivilegeEscalation: true
+          image: docker.io/cduchesne/simple
+          volumeMounts:
+            - name: dev
+              mountPath: /dev
+      volumes:
+        - name: dev
+          hostPath:
+            path: /dev

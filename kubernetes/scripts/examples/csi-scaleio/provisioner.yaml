@@ -1,0 +1,112 @@
+# This YAML file contains all API objects that are necessary to run external
+# CSI provisioner.
+#
+# In production, this needs to be in separate files, e.g. service account and
+# role and role binding needs to be created once, while stateful set may
+# require some tuning.
+#
+# In addition, mock CSI driver is hardcoded as the CSI driver.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-provisioner
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: external-provisioner-runner
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-provisioner-role
+subjects:
+  - kind: ServiceAccount
+    name: csi-provisioner
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: external-provisioner-runner
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: csi-provisioner
+  labels:
+    app: csi-provisioner
+spec:
+  selector:
+    app: csi-provisioner
+  ports:
+    - name: dummy
+      port: 12345
+---
+kind: StatefulSet
+apiVersion: apps/v1beta1
+metadata:
+  name: csi-provisioner
+spec:
+  serviceName: "csi-provisioner"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: csi-provisioner
+    spec:
+      serviceAccount: csi-provisioner
+      containers:
+        - name: csi-provisioner
+          image: docker.io/cduchesne/csi-provisioner
+          args:
+            - "--provisioner=csi-scaleio"
+            - "--csi-address=$(ADDRESS)"
+            - "--v=5"
+          env:
+            - name: ADDRESS
+              value: /var/run/csi/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/run/csi
+        - name: csi-scaleio
+          image: docker.io/cduchesne/csi-scaleio
+          command: ["/csi-scaleio"]
+          args: ["2>&1"]
+          env:
+            - name: CSI_ENDPOINT
+              value: /var/run/csi/csi.sock
+            - name: X_CSI_DEBUG
+              value: "true"
+            - name: GOSCALEIO_DEBUG
+              value: "true"
+            - name: X_CSI_SCALEIO_AUTOPROBE
+              value: "true"
+            - name: X_CSI_SCALEIO_ENDPOINT
+              value: https://192.168.50.11:8443
+            - name: X_CSI_SCALEIO_USER
+              value: admin
+            - name: X_CSI_SCALEIO_PASSWORD
+              value: Scaleio123
+            - name: X_CSI_SCALEIO_INSECURE
+              value: "true"
+            - name: X_CSI_SCALEIO_SYSTEMNAME
+              value: cluster1
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/run/csi
+      volumes:
+        - name: socket-dir
+          emptyDir:

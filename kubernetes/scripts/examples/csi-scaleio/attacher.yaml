@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-attacher
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: external-attacher-runner
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "update"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-attacher-role
+subjects:
+  - kind: ServiceAccount
+    name: csi-attacher
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: external-attacher-runner
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: StatefulSet
+apiVersion: apps/v1beta1
+metadata:
+  name: csi-attacher
+spec:
+  serviceName: "csi-attacher"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: csi-attacher
+    spec:
+      serviceAccount: csi-attacher
+      containers:
+        - name: csi-attacher
+          image: docker.io/cduchesne/csi-attacher
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/run/csi/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/run/csi
+        - name: csi-scaleio
+          image: docker.io/cduchesne/csi-scaleio
+          command: [ "/csi-scaleio" ]
+          args: [ "2>&1" ]
+          env:
+            - name: CSI_ENDPOINT
+              value: /var/run/csi/csi.sock
+            - name: X_CSI_DEBUG
+              value: "true"
+            - name: GOSCALEIO_DEBUG
+              value: "true"
+            - name: X_CSI_SCALEIO_AUTOPROBE
+              value: "true"
+            - name: X_CSI_SCALEIO_ENDPOINT
+              value: https://192.168.50.11:8443
+            - name: X_CSI_SCALEIO_USER
+              value: admin
+            - name: X_CSI_SCALEIO_PASSWORD
+              value: Scaleio123
+            - name: X_CSI_SCALEIO_INSECURE
+              value: "true"
+            - name: X_CSI_SCALEIO_SYSTEMNAME
+              value: cluster1
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/run/csi
+      volumes:
+        - name: socket-dir
+          emptyDir:

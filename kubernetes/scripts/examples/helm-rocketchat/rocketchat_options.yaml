@@ -1,0 +1,11 @@
+mongodb:
+  persistence:
+    enabled: true
+    storageClass: scaleio
+    accessMode: ReadWriteOnce
+    size: 8Gi
+persistence:
+  enabled: true
+  storageClass: scaleio
+  accessMode: ReadWriteOnce
+  size: 8Gi

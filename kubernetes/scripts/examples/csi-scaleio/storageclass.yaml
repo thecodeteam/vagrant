@@ -1,0 +1,9 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: scaleio 
+  annotations:
+    storageclass.beta.kubernetes.io/is-default-class: "true"
+provisioner: csi-scaleio
+parameters:
+  storagepool: pd1pool1
