@@ -57,6 +57,8 @@ echo "${MASTER_IP} master" >> /etc/hosts
 echo "${NODE01_IP} node01" >> /etc/hosts
 echo "${NODE02_IP} node02" >> /etc/hosts
 
+mkdir -p /vagrant/cache
+
 if [ ! -f /vagrant/cache/ssh_key ]; then
   ssh-keygen -b 2048 -t rsa -f /vagrant/cache/ssh_key -q -N ""
 fi
