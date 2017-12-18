@@ -3,7 +3,7 @@ vagrant-kubernetes
 
 ### Description
 
-Automatically deploy Kubernetes in an isolated environment on top of VirtualBox to test containers with persistent applications using ScaleIO. This is intended for testing functionality of Kubernetes 1.9.0 and how it can be utilize ScaleIO as a storagep platform via the csi-scaleio plugin.
+Automatically deploy Kubernetes in an isolated environment on top of VirtualBox to test containers with persistent applications using ScaleIO. This is intended for testing functionality of Kubernetes 1.9.0 and how it can utilize ScaleIO as a storage platform via the csi-scaleio plugin.
 
 Environment Details:
 
@@ -43,7 +43,7 @@ To get into any of the nodes, run the following from the vagrant/kubernetes dire
 
 1. `vagrant up`
 2. `vagrant ssh master`
-3. `./k8s-tmux.sh`
+3. `./tmux.sh`
 4. `kubectl apply -f csi-scaleio`
 5. `./pvc-create.sh vol01`
 6. `kubectl get pvc`
@@ -52,7 +52,7 @@ To get into any of the nodes, run the following from the vagrant/kubernetes dire
 
 ### ScaleIO GUI
 
-The ScaleIO GUI is automatically extracted and put into the `vagrant/kubernetes/scaleio-gui` directory, just run `run.sh` and it should start up. You will need Java JRE as a dependency. Connect to your instance with the credentials admin/Scaleio123
+The ScaleIO GUI is automatically extracted and put into the `vagrant/kubernetes/scaleio-gui` directory, just run `run.sh` and it should start up. You will need Java JRE as a dependency. Connect to your instance at 192.168.50.11 with the credentials admin/Scaleio123
 
 
 ### Troubleshooting
