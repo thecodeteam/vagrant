@@ -2,18 +2,18 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: csi-node
+  name: csi-scaleio-node
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-node
+  name: csi-scaleio-node
 rules:
   - apiGroups: [""]
-    resources: ["persistentvolumes"]
+    resources: ["nodes"]
     verbs: ["get", "list", "watch", "update"]
   - apiGroups: [""]
-    resources: ["nodes"]
+    resources: ["persistentvolumes"]
     verbs: ["get", "list", "watch", "update"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
@@ -22,34 +22,34 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-node
+  name: csi-scaleio-node
 subjects:
   - kind: ServiceAccount
-    name: csi-node
+    name: csi-scaleio-node
     namespace: default
 roleRef:
   kind: ClusterRole
-  name: csi-node
+  name: csi-scaleio-node
   apiGroup: rbac.authorization.k8s.io
 ---
 kind: DaemonSet
 apiVersion: apps/v1beta2
 metadata:
-  name: csi-scaleio
+  name: csi-scaleio-node
   namespace: default
 spec:
   selector:
     matchLabels:
-      app: csi-scaleio
+      app: csi-scaleio-node
   template:
     metadata:
       labels:
-        app: csi-scaleio
+        app: csi-scaleio-node
     spec:
-      serviceAccount: csi-node
+      serviceAccount: csi-scaleio-node
       hostNetwork: true
       containers:
-        - name: csi-scaleio
+        - name: csi-scaleio-node
           securityContext:
             privileged: true
             capabilities:
@@ -61,20 +61,8 @@ spec:
               value: unix:///var/lib/kubelet/plugins/com.thecodeteam.scaleio/csi.sock
             - name: X_CSI_DEBUG
               value: "true"
-            - name: GOSCALEIO_DEBUG
-              value: "true"
             - name: X_CSI_SCALEIO_AUTOPROBE
               value: "true"
-            - name: X_CSI_SCALEIO_ENDPOINT
-              value: https://192.168.50.11:8443
-            - name: X_CSI_SCALEIO_USER
-              value: admin
-            - name: X_CSI_SCALEIO_PASSWORD
-              value: Scaleio123
-            - name: X_CSI_SCALEIO_INSECURE
-              value: "true"
-            - name: X_CSI_SCALEIO_SYSTEMNAME
-              value: cluster1
             - name: X_CSI_PRIVATE_MOUNT_DIR
               value: "/var/lib/kubelet/plugins/com.thecodeteam.scaleio/disks"
           volumeMounts:

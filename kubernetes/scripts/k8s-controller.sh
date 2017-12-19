@@ -350,3 +350,8 @@ cat << EOF > /etc/sysconfig/network-scripts/route-enp0s8
 10.50.0.0/24 via ${NODE01_IP} dev enp0s8
 10.50.1.0/24 via ${NODE02_IP} dev enp0s8
 EOF
+
+#fix for Windows environments
+echo "Making sure scripts are executable"
+chmod +x /home/vagrant/tmux.sh
+chmod +x /home/vagrant/pvc-create.sh
